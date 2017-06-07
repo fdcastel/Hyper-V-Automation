@@ -66,6 +66,16 @@ Enables Powershell Remoting, CredSSP server authentication and sets WinRM firewa
 
 
 
+## Move-VMOffline
+
+```
+Move-VMOffline.ps1 [-VMName] <string> [-DestinationHost] <string> [-CertificateThumbprint] <string> [<CommonParameters>]
+```
+
+Uses Hyper-V replica to move a VM between hosts not joined in a domain.
+
+
+
 ## Usage sample
 
 ```powershell
