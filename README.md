@@ -2,7 +2,7 @@
 
 Collection of Powershell scripts to create Windows VMs in Hyper-V.
 
-For Windows Server 2016 / Hyper-V Server 2016 only.
+For Windows Server 2016 / Hyper-V Server 2016 / Windows 10 only.
 
 For Hyper-V Generation 2 VMs only.
 
@@ -11,7 +11,7 @@ For Hyper-V Generation 2 VMs only.
 ## New-WindowsUnattendFile
 
 ```
-New-WindowsUnattendFile.ps1 [-AdministratorPassword] <string> [[-FilePath] <string>] [[-ComputerName] <string>] [[-Locale] <string>] [<CommonParameters>]
+New-WindowsUnattendFile.ps1 [-AdministratorPassword] <string> [-Version] <string> [[-ComputerName] <string>] [[-FilePath] <string>] [[-Locale] <string>] [<CommonParameters>]
 ```
 
 Creates an `unattend.xml` file to initialize a Windows VM. Used by `New-VMFromWindowsImage`.
@@ -23,10 +23,14 @@ Returns the full path of created file.
 ## New-VMFromWindowsImage (*)
 
 ```
-New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-Locale] <string>] [<CommonParameters>]
+New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-Locale] <string>] [<CommonParameters>]
 ```
 
 Creates a Windows VM from .ISO image. 
+
+For the -Edition parameter use `Get-WindowsImage -ImagePath <path-to-install.wim>` to see all available images. Or just use "1" for the first one.
+
+The -Version parameter is needed to set the product key (required for a full unattended install).
 
 Returns the `VirtualMachine` created.
 
@@ -83,7 +87,7 @@ $isoFile = '.\14393.0.160715-1616.RS1_RELEASE_SERVER_EVAL_X64FRE_EN-US.ISO'
 $vmName = 'test'
 $pass = 'P@ssw0rd'
 
-.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'ServerStandardCore' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -MemoryStartupBytes 2GB -VMProcessorCount 2
+.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'ServerStandardCore' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2016Standard' -MemoryStartupBytes 2GB -VMProcessorCount 2
 
 $sess = .\New-VMSession.ps1 -VMName $vmName -AdministratorPassword $pass
 

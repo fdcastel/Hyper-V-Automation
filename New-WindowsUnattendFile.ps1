@@ -1,8 +1,16 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$true)][string]$AdministratorPassword,
-    [string]$FilePath,
+    [Parameter(Mandatory=$true)]
+    [string]$AdministratorPassword,
+
+    [Parameter(Mandatory=$true)]
+    [ValidateSet('Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional')]
+    [string]$Version,
+
     [string]$ComputerName,
+
+    [string]$FilePath,
+
     [string]$Locale
 )
 
@@ -13,7 +21,7 @@ $template = @'
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
     <settings pass="specialize">
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <ProductKey>WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY</ProductKey>
+            <ProductKey></ProductKey>
             <ComputerName></ComputerName>
         </component>
     </settings>
@@ -53,6 +61,15 @@ if ($Locale) {
     $xml.unattend.settings[1].component[0].SystemLocale = $Locale
     $xml.unattend.settings[1].component[0].UserLocale = $Locale
 }
+
+# Source: https://technet.microsoft.com/en-us/library/jj612867(v=ws.11).aspx
+$key = switch ($Version){ 
+    'Server2016Datacenter'  {'CB7KF-BWN84-R7R2Y-793K2-8XDDG'}
+    'Server2016Standard'    {'WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY'}
+    'Windows10Enterprise'   {'NPPR9-FWDCX-D2C8J-H872K-2YT43'}
+    'Windows10Professional' {'W269N-WFGWX-YVC9B-4J6C9-T83GX'}
+}
+$xml.unattend.settings[0].component.ProductKey = $key
 
 $encodedPassword = [System.Text.Encoding]::Unicode.GetBytes($AdministratorPassword + 'AdministratorPassword')
 $xml.unattend.settings[1].component[1].UserAccounts.AdministratorPassword.Value = [Convert]::ToBase64String($encodedPassword)
