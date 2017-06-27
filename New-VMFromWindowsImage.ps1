@@ -55,9 +55,7 @@ $vm | Start-VM
 
 # Wait for installation complete
 Write-Verbose 'Waiting for VM integration services...'
-do { 
-    Start-Sleep -Seconds 1
-} until (($vm | Get-VMIntegrationService -Name 'Heartbeat').PrimaryStatusDescription -eq 'OK')
+Wait-VM -Name $vmName -For Heartbeat
 
 # Return the VM created.
 Write-Verbose 'All done!'
