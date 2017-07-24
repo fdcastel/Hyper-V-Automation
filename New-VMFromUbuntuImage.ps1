@@ -136,11 +136,6 @@ Wait-VM -Name $VMName -For Heartbeat
 Write-Verbose 'Waiting for VM initial setup...'
 Start-Sleep -Seconds 20
 
-# Remove metadata ISO Image
-Write-Verbose 'Removing metadata ISO image...'
-Remove-VMDvdDrive -VMDvdDrive $dvd
-Remove-Item $metadataIso -Force
-
 # Return the VM created.
 Write-Verbose 'All done!'
 $vm
