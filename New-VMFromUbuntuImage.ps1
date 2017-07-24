@@ -49,8 +49,8 @@ ssh_pwauth: True
     if ($UserName) {
         if ($UserPublicKey) {
             $sectionSshAuthorizedKeys = @"
-ssh-authorized-keys:
-  - $UserPublicKey
+    ssh-authorized-keys:
+      - $UserPublicKey
 "@
         }
     
@@ -58,7 +58,7 @@ ssh-authorized-keys:
 users:
   - name: $UserName
     gecos: $UserName
-    sudo: ALL=(ALL) NOPASSWD:ALL
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
     groups: users, admin
     lock_passwd: true
 $sectionSshAuthorizedKeys
