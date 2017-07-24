@@ -8,6 +8,8 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$VMName,
 
+    [string]$FQDN = $VMName,
+
     [Parameter(Mandatory=$true, ParameterSetName='Root')]
     [string]$RootPassword,
 
@@ -69,6 +71,8 @@ $sectionSshAuthorizedKeys
 #cloud-config
 $sectionPasswd
 $sectionUsers
+runcmd:
+ - [ hostname, $FQDN ]
 "@
 
     if (-not $NetworkConfig) {

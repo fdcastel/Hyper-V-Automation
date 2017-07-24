@@ -110,8 +110,8 @@ Returns the content of generated file as string.
 ### New-VMFromUbuntuImage (*)
 
 ```
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-NetworkConfig <string>] [<CommonParameters>]
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -UserName <string> -UserPublicKey <string> [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-NetworkConfig <string>] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-NetworkConfig <string>] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -UserName <string> -UserPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-NetworkConfig <string>] [<CommonParameters>]
 ```
 
 Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 16.04 LTS only.
@@ -143,13 +143,15 @@ Returns the `VirtualMachine` created.
 ```powershell
 $imgFile = '.\ubuntu-16.04-server-cloudimg-amd64-uefi1.img'
 $vmName = 'test'
-$pass = 'a*e3JHrUq!cMm&'
+$fqdn = 'test.example.com'
+$userName = 'admin'
+$userPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
 $netConfig = .\New-NetworkConfig.ps1 -IPAddress 10.10.1.195 -PrefixLength 16 -DefaultGateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4'
 
-.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -RootPassword $pass -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -NetworkConfig $netConfig
+.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -UserName $userName -UserPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -NetworkConfig $netConfig
 
-ssh ubuntu@10.10.1.195
+ssh admin@10.10.1.195
 ```
 
 
