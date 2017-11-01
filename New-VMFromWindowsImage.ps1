@@ -18,7 +18,7 @@ param(
     [string]$AdministratorPassword,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional')]
+    [ValidateSet('Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional','Windows81Professional')]
     [string]$Version,
 
     [Parameter(Mandatory=$true)]

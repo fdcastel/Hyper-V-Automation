@@ -4,7 +4,7 @@ param(
     [string]$AdministratorPassword,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional')]
+    [ValidateSet('Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional','Windows81Professional')]
     [string]$Version,
 
     [string]$ComputerName,
@@ -35,7 +35,7 @@ $template = @'
         <component name="Microsoft-Windows-SQMApi" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <CEIPEnabled>0</CEIPEnabled>
         </component>
-        <component name="Microsoft-Windows-Deployment" processorArchitecture="x86" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <RunSynchronous>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>1</Order>
@@ -88,6 +88,7 @@ $key = switch ($Version){
     'Server2016Standard'    {'WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY'}
     'Windows10Enterprise'   {'NPPR9-FWDCX-D2C8J-H872K-2YT43'}
     'Windows10Professional' {'W269N-WFGWX-YVC9B-4J6C9-T83GX'}
+    'Windows81Professional' {'GCRJD-8NW9H-F2CDX-CCM8D-9D6T9'}
 }
 $xml.unattend.settings[0].component[0].ProductKey = $key
 
