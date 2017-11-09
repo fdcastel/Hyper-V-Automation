@@ -2,7 +2,7 @@
 
 Collection of Powershell scripts to create Windows and Ubuntu VMs in Hyper-V.
 
-For Windows Server 2016 / Hyper-V Server 2016 / Windows 10 only.
+For Windows Server 2016 / Hyper-V Server 2016 / Windows 10 / 8.1 only.
 
 For Hyper-V Generation 2 VMs only.
 
@@ -25,7 +25,7 @@ Returns the full path of created file.
 ### New-VMFromWindowsImage (*)
 
 ```
-New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-Locale] <string>] [<CommonParameters>]
+New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-Locale] <string>] [-EnableDynamicMemory] [<CommonParameters>]
 ```
 
 Creates a Windows VM from .ISO image. 
