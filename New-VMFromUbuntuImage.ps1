@@ -23,6 +23,8 @@ param(
 
     [int64]$MemoryStartupBytes = 1GB,
 
+    [switch]$EnableDynamicMemory,
+
     [int64]$VMProcessorCount = 2,
 
     [string]$VMSwitchName = 'SWITCH',
@@ -183,6 +185,9 @@ Write-Verbose 'Creating VM...'
 $vm = New-VM -Name $VMName -Generation 2 -MemoryStartupBytes $MemoryStartupBytes -VHDPath $vhdxPath -SwitchName $VMSwitchName
 $vm | Set-VMProcessor -Count $VMProcessorCount
 $vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegrationService
+if ($EnableDynamicMemory) {
+    $vm | Set-VMMemory -DynamicMemoryEnabled $true 
+}
 $vm | Set-VMFirmware -SecureBootTemplate 'MicrosoftUEFICertificateAuthority'
 
 # Ubuntu 16.04 startup hangs without a serial port (!?)

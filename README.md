@@ -124,8 +124,8 @@ Downloads the latest Ubuntu 16.04 LTS cloud image.
 ### New-VMFromUbuntuImage (*)
 
 ```
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-NetworkConfig <string>] [-EnableRouting] [<CommonParameters>]
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -UserName <string> -UserPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-NetworkConfig <string>] [-EnableRouting] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-NetworkConfig <string>] [-EnableRouting] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -UserName <string> -UserPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-NetworkConfig <string>] [-EnableRouting] [<CommonParameters>]
 ```
 
 Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 16.04 LTS only.
