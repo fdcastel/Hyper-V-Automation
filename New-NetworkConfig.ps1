@@ -13,7 +13,11 @@ param(
     [string]$DefaultGateway,
 
     [Parameter(ParameterSetName='Static')]
-    [string[]]$DnsAddresses = @('8.8.8.8','8.8.4.4')
+    [string[]]$DnsAddresses = @('8.8.8.8','8.8.4.4'),
+
+    [string]$SecondaryIPAddress,
+
+    [string]$SecondaryPrefixLength
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,11 +34,22 @@ if ($IPAddress) {
         gateway: $DefaultGateway
         $sectionDnsNameServers
 "@
-    } else {
-        $sectionSubnets = @"
+} else {
+    $sectionSubnets = @"
       - type: dhcp
 "@
-    }
+}
+
+$sectionSecondary = ''
+if ($SecondaryIPAddress) {
+    $sectionSecondary = @"
+  - type: physical
+    name: eth1
+    subnets:
+      - type: static
+        address: $SecondaryIPAddress/$SecondaryPrefixLength
+"@
+}
 
 $networkConfig = @"
 version: 1
@@ -43,6 +58,7 @@ config:
     name: eth0
     subnets:
 $sectionSubnets
+$sectionSecondary
 "@
 
 $networkConfig

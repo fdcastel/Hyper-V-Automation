@@ -27,7 +27,11 @@ param(
 
     [string]$VMSwitchName = 'SWITCH',
 
-    [string]$NetworkConfig
+    [string]$VMSecondarySwitchName,
+
+    [string]$NetworkConfig,
+
+    [switch]$EnableRouting
 )
 
 $ErrorActionPreference = 'Stop'
@@ -38,6 +42,11 @@ function New-MetadataIso($IsoFile) {
     $metadata = @"
 instance-id: $instanceId
 local-hostname: $VMName
+"@
+
+    $sectionRunCmd = @"
+runcmd:
+ - [ hostname, $FQDN ]
 "@
 
     if ($RootPassword) {
@@ -58,12 +67,59 @@ ssh_pwauth: True
     
         $sectionUsers = @"
 users:
-  - name: $UserName
-    gecos: $UserName
-    sudo: ['ALL=(ALL) NOPASSWD:ALL']
-    groups: users, admin
-    lock_passwd: true
+ - name: $UserName
+   gecos: $UserName
+   sudo: ['ALL=(ALL) NOPASSWD:ALL']
+   groups: users, admin
+   lock_passwd: true
 $sectionSshAuthorizedKeys
+"@
+    }
+
+    if ($EnableRouting) {
+        # https://help.ubuntu.com/community/IptablesHowTo#Configuration_on_startup
+        $sectionWriteFiles = @"
+write_files:
+ - content: |
+      # Turn on IP forwarding
+      net.ipv4.ip_forward=1
+   owner: root:root
+   permissions: '0644'
+   path: /etc/sysctl.d/50-enable-routing.conf
+
+ - content: |
+      #!/bin/sh
+      # Reload iptables
+      iptables-restore < /etc/iptables.rules
+      exit 0
+   owner: root:root
+   permissions: '0755'
+   path: /etc/network/if-pre-up.d/iptables-load
+
+ - content: |
+      #!/bin/sh
+      iptables-save -c > /etc/iptables.rules
+      if [ -f /etc/iptables.downrules ]; then
+         iptables-restore < /etc/iptables.downrules
+      fi
+      exit 0
+   owner: root:root
+   permissions: '0755'
+   path: /etc/network/if-post-down.d/iptables-save
+"@
+
+        # https://askubuntu.com/a/885967
+        $sectionRunCmd += @"
+
+ - [ iptables, -t, nat, -A, POSTROUTING, -o, eth0, -j, MASQUERADE ]
+ - [ iptables, -A, FORWARD, -i, eth0, -o, eth1, -m, state, --state, "RELATED,ESTABLISHED", -j, ACCEPT ]
+ - [ iptables, -A, FORWARD, -i, eth1, -o, eth0, -j, ACCEPT, ]
+ - [ sh, -c, "iptables-save > /etc/iptables.rules" ]
+"@
+
+        $sectionReboot = @"
+power_state:
+ mode: reboot
 "@
     }
 
@@ -71,8 +127,9 @@ $sectionSshAuthorizedKeys
 #cloud-config
 $sectionPasswd
 $sectionUsers
-runcmd:
- - [ hostname, $FQDN ]
+$sectionWriteFiles
+$sectionRunCmd
+$sectionReboot
 "@
 
     if (-not $NetworkConfig) {
@@ -88,14 +145,16 @@ runcmd:
 
         $oscdimgPath = Join-Path $PSScriptRoot '.\tools\oscdimg.exe'
         echo $oscdimgPath
-        & {            $ErrorActionPreference = 'Continue'
+        & {
+            $ErrorActionPreference = 'Continue'
             & $oscdimgPath $tempPath $metadataIso -j2 -lcidata
             if ($LASTEXITCODE -gt 0) {
                 throw "oscdimg.exe returned $LASTEXITCODE."
             }
-        }    }
+        }
+    }
     finally {
-        rmdir -Path $tempPath –Recurse -Force
+        rmdir -Path $tempPath -Recurse -Force
     }
 }
 
@@ -128,6 +187,11 @@ $vm | Set-VMFirmware -SecureBootTemplate 'MicrosoftUEFICertificateAuthority'
 
 # Ubuntu 16.04 startup hangs without a serial port (!?)
 $vm | Set-VMComPort -Number 1 -Path "\\.\pipe\$VMName-COM1"
+
+# Adds secondary network adapter
+if ($VMSecondarySwitchName) {
+    $vm | Add-VMNetworkAdapter -SwitchName $VMSecondarySwitchName
+}
 
 $dvd = $vm | Add-VMDvdDrive -Path $metadataIso -Passthru
 $vm | Start-VM
