@@ -39,6 +39,9 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function New-MetadataIso($IsoFile) {
+    # Creates a NoCloud data source for cloud-init.
+    #   More info: http://cloudinit.readthedocs.io/en/latest/topics/datasources/nocloud.html
+
     $instanceId = [Guid]::NewGuid().ToString()
  
     $metadata = @"
