@@ -10,14 +10,11 @@ param(
 
     [string]$FQDN = $VMName,
 
-    [Parameter(Mandatory=$true, ParameterSetName='Root')]
+    [Parameter(Mandatory=$true, ParameterSetName='RootPassword')]
     [string]$RootPassword,
 
-    [Parameter(Mandatory=$true, ParameterSetName='User')]
-    [string]$UserName,
-
-    [Parameter(Mandatory=$true, ParameterSetName='User')]
-    [string]$UserPublicKey,
+    [Parameter(Mandatory=$true, ParameterSetName='RootPublicKey')]
+    [string]$RootPublicKey,
 
     [uint64]$VHDXSizeBytes,
 
@@ -33,7 +30,9 @@ param(
 
     [string]$NetworkConfig,
 
-    [switch]$EnableRouting
+    [switch]$EnableRouting,
+
+    [switch]$InstallDocker
 )
 
 $ErrorActionPreference = 'Stop'
@@ -49,10 +48,12 @@ instance-id: $instanceId
 local-hostname: $VMName
 "@
 
-    $sectionRunCmd = @"
+    $sectionRunCmd = @'
 runcmd:
- - [ hostname, $FQDN ]
-"@
+ - 'apt-get update'
+ - 'apt-get install -y linux-virtual-lts-xenial'
+ - 'echo "eth0: \4{eth0}" >> /etc/issue'
+'@
 
     if ($RootPassword) {
         $sectionPasswd = @"
@@ -60,24 +61,10 @@ password: $RootPassword
 chpasswd: { expire: False }
 ssh_pwauth: True
 "@
-    }
-
-    if ($UserName) {
-        if ($UserPublicKey) {
-            $sectionSshAuthorizedKeys = @"
-    ssh-authorized-keys:
-      - $UserPublicKey
-"@
-        }
-    
-        $sectionUsers = @"
-users:
- - name: $UserName
-   gecos: $UserName
-   sudo: ['ALL=(ALL) NOPASSWD:ALL']
-   groups: users, admin
-   lock_passwd: true
-$sectionSshAuthorizedKeys
+    } elseif ($RootPublicKey) {
+        $sectionPasswd = @"
+ssh_authorized_keys:
+  - $RootPublicKey
 "@
     }
 
@@ -116,25 +103,36 @@ write_files:
         # https://askubuntu.com/a/885967
         $sectionRunCmd += @"
 
- - [ iptables, -t, nat, -A, POSTROUTING, -o, eth0, -j, MASQUERADE ]
- - [ iptables, -A, FORWARD, -i, eth0, -o, eth1, -m, state, --state, "RELATED,ESTABLISHED", -j, ACCEPT ]
- - [ iptables, -A, FORWARD, -i, eth1, -o, eth0, -j, ACCEPT, ]
- - [ sh, -c, "iptables-save > /etc/iptables.rules" ]
+ - 'iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
+ - 'iptables -A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT'
+ - 'iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT'
+ - 'iptables-save > /etc/iptables.rules'
 "@
+    }
 
-        $sectionReboot = @"
-power_state:
- mode: reboot
-"@
+    if ($InstallDocker) {
+        $sectionRunCmd += @'
+
+ - 'apt-get install -y apt-transport-https ca-certificates curl software-properties-common'
+ - 'curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -'
+ - 'add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"'
+ - 'apt-get update'
+ - 'apt-get install -y docker-ce'
+'@
     }
 
     $userdata = @"
 #cloud-config
+hostname: $FQDN
+fqdn: $FQDN
+
 $sectionPasswd
-$sectionUsers
 $sectionWriteFiles
 $sectionRunCmd
-$sectionReboot
+
+power_state:
+ mode: reboot
+ timeout: 300
 "@
 
     if (-not $NetworkConfig) {
@@ -175,7 +173,7 @@ New-MetadataIso -IsoFile $metadataIso
 
 # Convert cloud image to VHDX
 Write-Verbose 'Creating VHDX from cloud image...'
-    $ErrorActionPreference = 'Continue'
+$ErrorActionPreference = 'Continue'
 & {
     & qemu-img.exe convert -f qcow2 $SourcePath -O vhdx -o subformat=dynamic $vhdxPath
 }
@@ -191,7 +189,10 @@ $vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegr
 if ($EnableDynamicMemory) {
     $vm | Set-VMMemory -DynamicMemoryEnabled $true 
 }
-$vm | Set-VMFirmware -SecureBootTemplate 'MicrosoftUEFICertificateAuthority'
+# Sets Secure Boot Template. 
+#   Set-VMFirmware -SecureBootTemplate 'MicrosoftUEFICertificateAuthority' doesn't work anymore (!?).
+$vm | Set-VMFirmware -SecureBootTemplateId ([guid]'272e7447-90a4-4563-a4b9-8e4ab00526ce')
+
 
 # Ubuntu 16.04 startup hangs without a serial port (!?)
 $vm | Set-VMComPort -Number 1 -Path "\\.\pipe\$VMName-COM1"
@@ -205,12 +206,15 @@ $dvd = $vm | Add-VMDvdDrive -Path $metadataIso -Passthru
 $vm | Start-VM
 
 # Wait for VM
-Write-Verbose 'Waiting for VM integration services...'
+Write-Verbose 'Waiting for VM integration services (1)...'
 Wait-VM -Name $VMName -For Heartbeat
 
 # Wait for installation complete
 Write-Verbose 'Waiting for VM initial setup...'
-Start-Sleep -Seconds 20
+Wait-VM -Name $VMName -For Reboot
+
+Write-Verbose 'Waiting for VM integration services (2)...'
+Wait-VM -Name $VMName -For Heartbeat
 
 # Return the VM created.
 Write-Verbose 'All done!'
