@@ -30,6 +30,8 @@ param(
 
     [string]$VMSwitchName = 'SWITCH',
 
+    [string]$VMMacAddress,
+
     [string]$Locale = 'en-US'
 )
 
@@ -55,6 +57,9 @@ $vm | Set-VMProcessor -Count $VMProcessorCount
 $vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegrationService -Passthru
 if ($EnableDynamicMemory) {
     $vm | Set-VMMemory -DynamicMemoryEnabled $true 
+}
+if ($VMMacAddress) {
+    $vm | Set-VMNetworkAdapter -StaticMacAddress ($VMMacAddress -replace ':','')
 }
 $vm | Start-VM
 

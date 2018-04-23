@@ -28,6 +28,8 @@ param(
 
     [string]$VMSecondarySwitchName,
 
+    [string]$VMMacAddress,
+
     [string]$NetworkConfig,
 
     [switch]$EnableRouting,
@@ -52,7 +54,7 @@ local-hostname: $VMName
 runcmd:
  - 'apt-get update'
  - 'apt-get install -y linux-virtual-lts-xenial'
- - 'echo "eth0: \4{eth0}" >> /etc/issue'
+ - 'echo "eth0: \134\64{eth0}" >> /etc/issue'
 '@
 
     if ($RootPassword) {
@@ -131,8 +133,8 @@ $sectionWriteFiles
 $sectionRunCmd
 
 power_state:
- mode: reboot
- timeout: 300
+  mode: reboot
+  timeout: 300
 "@
 
     if (-not $NetworkConfig) {
@@ -196,6 +198,11 @@ $vm | Set-VMFirmware -SecureBootTemplateId ([guid]'272e7447-90a4-4563-a4b9-8e4ab
 
 # Ubuntu 16.04 startup hangs without a serial port (!?)
 $vm | Set-VMComPort -Number 1 -Path "\\.\pipe\$VMName-COM1"
+
+# Sets VM Mac Address
+if ($VMMacAddress) {
+    $vm | Set-VMNetworkAdapter -StaticMacAddress ($VMMacAddress -replace ':','')
+}
 
 # Adds secondary network adapter
 if ($VMSecondarySwitchName) {
