@@ -53,8 +53,9 @@ local-hostname: $VMName
     $sectionRunCmd = @'
 runcmd:
  - 'apt-get update'
- - 'apt-get install -y linux-virtual-lts-xenial'
  - 'echo "eth0: \134\64{eth0}" >> /etc/issue'
+ - 'mv /etc/network/interfaces.d/50-cloud-init.cfg /etc/network/interfaces.d/80-static.cfg'
+ - 'touch /etc/cloud/cloud-init.disabled'
 '@
 
     if ($RootPassword) {
