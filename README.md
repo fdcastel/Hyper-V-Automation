@@ -25,7 +25,7 @@ Returns the full path of created file.
 ### New-VMFromWindowsImage (*)
 
 ```
-New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-Locale] <string>] [-EnableDynamicMemory] [<CommonParameters>]
+New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-VMMacAddress] <string>] [[-Locale] <string>] [-EnableDynamicMemory] [<CommonParameters>]
 ```
 
 Creates a Windows VM from .ISO image. 
@@ -114,21 +114,23 @@ Returns the content of generated file as string.
 ### Get-UbuntuImage.ps1
 
 ```
-Get-UbuntuImage.ps1 [-OutFileName] <string> [<CommonParameters>]
+Get-UbuntuImage.ps1 [[-OutFileName] <string>] [-Previous] [<CommonParameters>]
 ```
 
-Downloads the latest Ubuntu 16.04 LTS cloud image.
+Downloads the latest Ubuntu 18.04 LTS cloud image.
+
+Use the `-Previous` parameter to get Ubuntu 16.04 LTS, instead.
 
 
 
 ### New-VMFromUbuntuImage (*)
 
 ```
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-NetworkConfig <string>] [-EnableRouting] [<CommonParameters>]
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -UserName <string> -UserPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-NetworkConfig <string>] [-EnableRouting] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-EnableRouting] [-InstallDocker] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-EnableRouting] [-InstallDocker] [<CommonParameters>]
 ```
 
-Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 16.04 LTS only.
+Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 18.04 LTS and 16.04 LTS only.
 
 You will need [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
@@ -136,9 +138,9 @@ You will need [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If y
 choco install qemu-img -y
 ```
 
-You can download Ubuntu cloud images from [here](https://cloud-images.ubuntu.com/releases/16.04/release/) (get the AMD64 UEFI version). Or just use `Get-UbuntuImage.ps1`.
+You can download Ubuntu cloud images from [here](https://cloud-images.ubuntu.com/releases/18.04/release/) (get the AMD64 IMG version). Or just use `Get-UbuntuImage.ps1`.
 
-You may use `-RootPassword` to set a root password (for the default `ubuntu` user) or use `-UserName` and `-UserPublicKey` to create a new user and its public key.
+You must use `-RootPassword` to set a password or `-RootPublicKey` to set a public key for the default `ubuntu` user.
 
 For the `-NetworkConfig` parameter you may pass a `network-config` content. If not specified the network will be set up via DHCP. 
 
@@ -147,6 +149,8 @@ You can read the documentation for `network-config` [here](http://cloudinit.read
 Alternatively, you may use `New-NetworkConfig.ps1` to create a file with basic network settings.
 
 You may create a virtual router using `-EnableRouting` switch. In this case you must provide a secondary virtual switch name using `-VMSecondarySwitchName`. The primary adapter (`eth0`) will be used for WAN and the secondary (`eth1`) for LAN.
+
+You may install Docker using `-InstallDocker` switch.
 
 Returns the `VirtualMachine` created.
 
@@ -158,22 +162,21 @@ Returns the `VirtualMachine` created.
 
 ```powershell
 # Create a VM with static IP configuration and ssh public key access
-$imgFile = '.\ubuntu-16.04-server-cloudimg-amd64-uefi1.img'
+$imgFile = '.\ubuntu-18.04-server-cloudimg-amd64.img'
 $vmName = 'test'
 $fqdn = 'test.example.com'
-$userName = 'admin'
-$userPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
+$rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
 $netConfig = .\New-NetworkConfig.ps1 -IPAddress 10.10.1.195 -PrefixLength 16 -DefaultGateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4'
 
-.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -UserName $userName -UserPublicKey $userPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -NetworkConfig $netConfig
+.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $userPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -NetworkConfig $netConfig
 
-ssh admin@10.10.1.195
+ssh ubuntu@10.10.1.195
 
 
 
 # Create a router using DHCP for WAN and 10.80.1.0/24 subnet for LAN (uses "SWITCH" for External Switch and "ISWITCH" for Internal one)
-$imgFile = '.\ubuntu-16.04-server-cloudimg-amd64-uefi1.img'
+$imgFile = '.\ubuntu-18.04-server-cloudimg-amd64.img'
 $vmName = 'router'
 $fqdn = 'router.example.com'
 $pass = 'test'
@@ -185,7 +188,7 @@ $netConfig = .\New-NetworkConfig.ps1 -Dhcp -SecondaryIPAddress 10.80.1.1 -Second
 
 
 # Create a VM in router LAN
-$imgFile = '.\ubuntu-16.04-server-cloudimg-amd64-uefi1.img'
+$imgFile = '.\ubuntu-18.04-server-cloudimg-amd64.img'
 $vmName = 'test-router'
 $fqdn = 'test-router.example.com'
 $pass = 'test'
