@@ -116,11 +116,7 @@ write_files:
     if ($InstallDocker) {
         $sectionRunCmd += @'
 
- - 'apt-get install -y apt-transport-https ca-certificates curl software-properties-common'
- - 'curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -'
- - 'add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"'
- - 'apt-get update'
- - 'apt-get install -y docker-ce'
+ - 'apt install docker.io -y'
 '@
     }
 
@@ -197,7 +193,7 @@ if ($EnableDynamicMemory) {
 $vm | Set-VMFirmware -SecureBootTemplateId ([guid]'272e7447-90a4-4563-a4b9-8e4ab00526ce')
 
 
-# Ubuntu 16.04 startup hangs without a serial port (!?)
+# Ubuntu 16.04/18.04 startup hangs without a serial port (!?)
 $vm | Set-VMComPort -Number 1 -Path "\\.\pipe\$VMName-COM1"
 
 # Sets VM Mac Address
@@ -210,6 +206,7 @@ if ($VMSecondarySwitchName) {
     $vm | Add-VMNetworkAdapter -SwitchName $VMSecondarySwitchName
 }
 
+# Adds DVD with metadata.iso
 $dvd = $vm | Add-VMDvdDrive -Path $metadataIso -Passthru
 $vm | Start-VM
 
@@ -223,6 +220,9 @@ Wait-VM -Name $VMName -For Reboot
 
 Write-Verbose 'Waiting for VM integration services (2)...'
 Wait-VM -Name $VMName -For Heartbeat
+
+# Removes DVD with metadata.iso
+$dvd | Remove-VMDvdDrive
 
 # Return the VM created.
 Write-Verbose 'All done!'
