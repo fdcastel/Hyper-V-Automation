@@ -50,11 +50,15 @@ instance-id: $instanceId
 local-hostname: $VMName
 "@
 
+    # /etc/network/interfaces.d/50-cloud-init.cfg -> Ubuntu 16.04 LTS (Xenial)
+    # /etc/netplan/50-cloud-init.yaml -> Ubuntu 18.04 LTS (Bionic)
+
     $sectionRunCmd = @'
 runcmd:
  - 'apt-get update'
  - 'echo "eth0: \134\64{eth0}" >> /etc/issue'
  - 'mv /etc/network/interfaces.d/50-cloud-init.cfg /etc/network/interfaces.d/80-static.cfg'
+ - 'mv /etc/netplan/50-cloud-init.yaml /etc/netplan/80-static.yaml'
  - 'touch /etc/cloud/cloud-init.disabled'
 '@
 
