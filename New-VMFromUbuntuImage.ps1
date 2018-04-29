@@ -221,8 +221,9 @@ Wait-VM -Name $VMName -For Reboot
 Write-Verbose 'Waiting for VM integration services (2)...'
 Wait-VM -Name $VMName -For Heartbeat
 
-# Removes DVD with metadata.iso
+# Removes DVD and metadata.iso
 $dvd | Remove-VMDvdDrive
+$metadataIso | Remove-Item -Force
 
 # Return the VM created.
 Write-Verbose 'All done!'
