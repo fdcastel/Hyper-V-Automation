@@ -157,6 +157,7 @@ power_state:
     }
     finally {
         rmdir -Path $tempPath -Recurse -Force
+        $ErrorActionPreference = 'Stop'
     }
 }
 
@@ -176,6 +177,7 @@ $ErrorActionPreference = 'Continue'
 & {
     & qemu-img.exe convert -f qcow2 $SourcePath -O vhdx -o subformat=dynamic $vhdxPath
 }
+$ErrorActionPreference = 'Stop'
 if ($VHDXSizeBytes) {
     Resize-VHD -Path $vhdxPath -SizeBytes $VHDXSizeBytes
 }
@@ -214,9 +216,16 @@ $vm | Start-VM
 Write-Verbose 'Waiting for VM integration services (1)...'
 Wait-VM -Name $VMName -For Heartbeat
 
-# Wait for installation complete
+# Cloud-init will reboot after initial machine setup. Wait for it...
 Write-Verbose 'Waiting for VM initial setup...'
-Wait-VM -Name $VMName -For Reboot
+try {
+    Wait-VM -Name $VMName -For Reboot
+} catch {
+    # Win 2016 RTM doesn't have "Reboot" in WaitForVMTypes type. 
+    #   Wait until heartbeat service stops responding.
+    $heartbeatService = ($vm | Get-VMIntegrationService -Name 'Heartbeat')
+    while ($heartbeatService.PrimaryStatusDescription -eq 'OK') { Start-Sleep  1 }
+}
 
 Write-Verbose 'Waiting for VM integration services (2)...'
 Wait-VM -Name $VMName -For Heartbeat
