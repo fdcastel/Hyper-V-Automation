@@ -13,52 +13,40 @@ param(
     [string]$DefaultGateway,
 
     [Parameter(ParameterSetName='Static')]
-    [string[]]$DnsAddresses = @('8.8.8.8','8.8.4.4'),
-
-    [string]$SecondaryIPAddress,
-
-    [string]$SecondaryPrefixLength
+    [string[]]$DnsAddresses = @('1.1.1.1','1.0.0.1')
 )
 
 $ErrorActionPreference = 'Stop'
 
 if ($IPAddress) {
-    if ($DnsAddresses) {
-        $sep = "`n          - "
-        $sectionDnsNameServers = 'dns_nameservers:' + $sep + ($DnsAddresses -join $sep)
-    }
-
-    $sectionSubnets = @"
-      - type: static
-        address: $IPAddress/$PrefixLength
-        gateway: $DefaultGateway
-        $sectionDnsNameServers
+    $sectionEth0 = @"
+    addresses: [$IPAddress/$PrefixLength]
+    gateway4: $DefaultGateway
+    nameservers:
+      addresses: [$($DnsAddresses -join ', ')]
 "@
 } else {
-    $sectionSubnets = @"
-      - type: dhcp
+    $sectionEth0 = @"
+    dhcp4: true
 "@
 }
 
-$sectionSecondary = ''
-if ($SecondaryIPAddress) {
-    $sectionSecondary = @"
-  - type: physical
-    name: eth1
-    subnets:
-      - type: static
-        address: $SecondaryIPAddress/$SecondaryPrefixLength
+if ($PrefixLength -eq 32) {
+    # Workaround for /32 addresses. Netplan won't generate correct routes without this.
+    $sectionEth0 += @"
+
+    routes:
+      - to: 0.0.0.0/0
+        via: $DefaultGateway
+        on-link: true
 "@
 }
 
 $networkConfig = @"
-version: 1
-config:
-  - type: physical
-    name: eth0
-    subnets:
-$sectionSubnets
-$sectionSecondary
+version: 2
+ethernets:
+  eth0:
+$sectionEth0
 "@
 
 $networkConfig

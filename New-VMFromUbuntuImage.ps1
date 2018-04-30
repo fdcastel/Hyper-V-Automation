@@ -26,13 +26,9 @@ param(
 
     [string]$VMSwitchName = 'SWITCH',
 
-    [string]$VMSecondarySwitchName,
-
     [string]$VMMacAddress,
 
     [string]$NetworkConfig,
-
-    [switch]$EnableRouting,
 
     [switch]$InstallDocker
 )
@@ -50,14 +46,10 @@ instance-id: $instanceId
 local-hostname: $VMName
 "@
 
-    # /etc/network/interfaces.d/50-cloud-init.cfg -> Ubuntu 16.04 LTS (Xenial)
-    # /etc/netplan/50-cloud-init.yaml -> Ubuntu 18.04 LTS (Bionic)
-
     $sectionRunCmd = @'
 runcmd:
  - 'apt-get update'
  - 'echo "eth0: \134\64{eth0}" >> /etc/issue'
- - 'mv /etc/network/interfaces.d/50-cloud-init.cfg /etc/network/interfaces.d/80-static.cfg'
  - 'mv /etc/netplan/50-cloud-init.yaml /etc/netplan/80-static.yaml'
  - 'touch /etc/cloud/cloud-init.disabled'
 '@
@@ -75,52 +67,10 @@ ssh_authorized_keys:
 "@
     }
 
-    if ($EnableRouting) {
-        # https://help.ubuntu.com/community/IptablesHowTo#Configuration_on_startup
-        $sectionWriteFiles = @"
-write_files:
- - content: |
-      # Turn on IP forwarding
-      net.ipv4.ip_forward=1
-   owner: root:root
-   permissions: '0644'
-   path: /etc/sysctl.d/50-enable-routing.conf
-
- - content: |
-      #!/bin/sh
-      # Reload iptables
-      iptables-restore < /etc/iptables.rules
-      exit 0
-   owner: root:root
-   permissions: '0755'
-   path: /etc/network/if-pre-up.d/iptables-load
-
- - content: |
-      #!/bin/sh
-      iptables-save -c > /etc/iptables.rules
-      if [ -f /etc/iptables.downrules ]; then
-         iptables-restore < /etc/iptables.downrules
-      fi
-      exit 0
-   owner: root:root
-   permissions: '0755'
-   path: /etc/network/if-post-down.d/iptables-save
-"@
-
-        # https://askubuntu.com/a/885967
-        $sectionRunCmd += @"
-
- - 'iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
- - 'iptables -A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT'
- - 'iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT'
- - 'iptables-save > /etc/iptables.rules'
-"@
-    }
-
     if ($InstallDocker) {
         $sectionRunCmd += @'
 
- - 'apt install docker.io -y'
+ - 'apt install docker.io docker-compose -y'
 '@
     }
 
@@ -205,11 +155,6 @@ $vm | Set-VMComPort -Number 1 -Path "\\.\pipe\$VMName-COM1"
 # Sets VM Mac Address
 if ($VMMacAddress) {
     $vm | Set-VMNetworkAdapter -StaticMacAddress ($VMMacAddress -replace ':','')
-}
-
-# Adds secondary network adapter
-if ($VMSecondarySwitchName) {
-    $vm | Add-VMNetworkAdapter -SwitchName $VMSecondarySwitchName
 }
 
 # Adds DVD with metadata.iso

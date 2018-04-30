@@ -1,7 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$OutputPath,    
-    [switch]$Previous
+    [string]$OutputPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,15 +8,8 @@ $ErrorActionPreference = 'Stop'
 # Note: Github removed TLS 1.0 support. Enables TLS 1.2
 # [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol-bor 'Tls12'
 
-if ($Previous) {
-    Write-Verbose 'Looking for Ubuntu 16.04 LTS (Xenial Xerus)...' 
-    $urlRoot = 'https://cloud-images.ubuntu.com/releases/16.04/release'
-    $urlFile = 'ubuntu-16.04-server-cloudimg-amd64-uefi1.img'
-} else {
-    Write-Verbose 'Looking for Ubuntu 18.04 LTS (Bionic Beaver)...' 
-    $urlRoot = 'https://cloud-images.ubuntu.com/releases/18.04/release'
-    $urlFile = 'ubuntu-18.04-server-cloudimg-amd64.img'
-}
+$urlRoot = 'https://cloud-images.ubuntu.com/releases/18.04/release'
+$urlFile = 'ubuntu-18.04-server-cloudimg-amd64.img'
 
 $url = "$urlRoot/$urlFile"
         
