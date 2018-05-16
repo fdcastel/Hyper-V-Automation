@@ -114,10 +114,14 @@ Returns the content of generated file as string.
 ### Get-UbuntuImage.ps1
 
 ```
-Get-UbuntuImage.ps1 [[-OutFileName] <string>] [-Previous] [<CommonParameters>]
+Get-UbuntuImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
 ```
 
-Downloads the latest Ubuntu 18.04 LTS cloud image.
+Downloads the latest Ubuntu 18.04 LTS cloud image and verify its integrity.
+
+Use the `-OutputPath` parameter to set the download location. If not informed, the current folder will be used.
+
+Returns the path for the downloaded file.
 
 
 

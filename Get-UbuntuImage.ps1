@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # Note: Github removed TLS 1.0 support. Enables TLS 1.2
-# [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol-bor 'Tls12'
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol-bor 'Tls12'
 
 $urlRoot = 'https://cloud-images.ubuntu.com/releases/18.04/release'
 $urlFile = 'ubuntu-18.04-server-cloudimg-amd64.img'
@@ -14,7 +14,7 @@ $urlFile = 'ubuntu-18.04-server-cloudimg-amd64.img'
 $url = "$urlRoot/$urlFile"
         
 if (-not $OutputPath) {
-    $OutputPath = '.\'
+    $OutputPath = Get-Item '.\'
 }
 
 $imgFile = Join-Path $OutputPath $urlFile
