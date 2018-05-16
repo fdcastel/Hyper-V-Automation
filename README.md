@@ -124,8 +124,8 @@ Downloads the latest Ubuntu 18.04 LTS cloud image.
 ### New-VMFromUbuntuImage (*)
 
 ```
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-EnableRouting] [-InstallDocker] [<CommonParameters>]
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMSecondarySwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-EnableRouting] [-InstallDocker] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-InstallDocker] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-InstallDocker] [<CommonParameters>]
 ```
 
 Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 18.04 LTS only.
@@ -145,8 +145,6 @@ For the `-NetworkConfig` parameter you may pass a `network-config` content. If n
 You can read the documentation for `network-config` [here](http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v2.html).
 
 Alternatively, you may use `New-NetworkConfig.ps1` to create a file with basic network settings.
-
-You may create a virtual router using `-EnableRouting` switch. In this case you must provide a secondary virtual switch name using `-VMSecondarySwitchName`. The primary adapter (`eth0`) will be used for WAN and the secondary (`eth1`) for LAN.
 
 You may install Docker using `-InstallDocker` switch.
 
@@ -170,30 +168,6 @@ $netConfig = .\New-NetworkConfig.ps1 -IPAddress 10.10.1.195 -PrefixLength 16 -De
 .\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $userPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -NetworkConfig $netConfig
 
 ssh ubuntu@10.10.1.195
-
-
-
-# Create a router using DHCP for WAN and 10.80.1.0/24 subnet for LAN (uses "SWITCH" for External Switch and "ISWITCH" for Internal one)
-$imgFile = '.\ubuntu-18.04-server-cloudimg-amd64.img'
-$vmName = 'router'
-$fqdn = 'router.example.com'
-$pass = 'test'
-
-$netConfig = .\New-NetworkConfig.ps1 -Dhcp -SecondaryIPAddress 10.80.1.1 -SecondaryPrefixLength 24
-
-.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPassword $pass -VHDXSizeBytes 60GB -MemoryStartupBytes 1GB -VMProcessorCount 1 -VMSwitchName 'SWITCH' -VMSecondarySwitchName 'ISWITCH' -NetworkConfig $netConfig -EnableRouting
-
-
-
-# Create a VM in router LAN
-$imgFile = '.\ubuntu-18.04-server-cloudimg-amd64.img'
-$vmName = 'test-router'
-$fqdn = 'test-router.example.com'
-$pass = 'test'
-
-$netConfig = .\New-NetworkConfig.ps1 -IPAddress 10.80.1.10 -PrefixLength 24 -DefaultGateway 10.80.1.1 -DnsAddresses '8.8.8.8','8.8.4.4'
-.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPassword $pass -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -VMSwitchName 'ISWITCH' -NetworkConfig $netConfig 
-```
 
 
 
