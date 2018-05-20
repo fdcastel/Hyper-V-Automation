@@ -76,6 +76,7 @@ ssh_authorized_keys:
  - 'apt update'
  - 'apt install -y docker-ce'
  - 'apt install -y docker-compose'
+ - 'systemctl enable docker'
 '@
     }
 
