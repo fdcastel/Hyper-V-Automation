@@ -172,12 +172,12 @@ $netConfig = .\New-NetworkConfig.ps1 -IPAddress 10.10.1.195 -PrefixLength 16 -De
 .\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $userPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -NetworkConfig $netConfig
 
 ssh ubuntu@10.10.1.195
+```
 
 
+## For any VMs
 
-## For all VMs
-
-## Move-VMOffline
+### Move-VMOffline
 
 ```
 Move-VMOffline.ps1 [-VMName] <string> [-DestinationHost] <string> [-CertificateThumbprint] <string> [<CommonParameters>]
