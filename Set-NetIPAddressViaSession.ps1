@@ -26,6 +26,10 @@ Invoke-Command -Session $Session {
     $neta | Set-NetConnectionProfile -NetworkCategory $using:NetworkCategory
     $neta | Set-NetIPInterface -Dhcp Disabled
     $neta | Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Remove-NetIPAddress -Confirm:$false 
-    $neta | New-NetIPAddress -IPAddress $using:IPAddress -PrefixLength $using:PrefixLength -DefaultGateway $using:DefaultGateway
+
+    # New-NetIPAddress may fail for certain scenarios (e.g. PrefixLength = 32). Using netsh instead.
+    $mask = [IPAddress](([UInt32]::MaxValue) -shl (32 - $using:PrefixLength) -shr (32 - $using:PrefixLength))
+    netsh interface ipv4 set address name="$($neta.InterfaceAlias)" static $using:IPAddress $mask.IPAddressToString $using:DefaultGateway
+
     $neta | Set-DnsClientServerAddress -Addresses $using:DnsAddresses
 } | Out-Null
