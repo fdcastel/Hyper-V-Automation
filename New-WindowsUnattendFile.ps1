@@ -4,7 +4,7 @@ param(
     [string]$AdministratorPassword,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional','Windows81Professional')]
+    [ValidateSet('Server2019Datacenter','Server2019Standard','Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional','Windows81Professional')]
     [string]$Version,
 
     [string]$ComputerName,
@@ -82,8 +82,10 @@ if ($Locale) {
     $xml.unattend.settings[0].component[1].UserLocale = $Locale
 }
 
-# Source: https://technet.microsoft.com/en-us/library/jj612867(v=ws.11).aspx
+# Source: https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
 $key = switch ($Version){ 
+    'Server2019Datacenter'  {'WMDGN-G9PQG-XVVXX-R3X43-63DFG'}
+    'Server2019Standard'    {'N69G4-B89J2-4G8F4-WWYCC-J464C'}
     'Server2016Datacenter'  {'CB7KF-BWN84-R7R2Y-793K2-8XDDG'}
     'Server2016Standard'    {'WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY'}
     'Windows10Enterprise'   {'NPPR9-FWDCX-D2C8J-H872K-2YT43'}
