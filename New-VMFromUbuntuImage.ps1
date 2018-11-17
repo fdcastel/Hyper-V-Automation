@@ -165,9 +165,15 @@ if ($VMMacAddress) {
 
 # Adds DVD with metadata.iso
 $dvd = $vm | Add-VMDvdDrive -Path $metadataIso -Passthru
-$vm | Start-VM
+
+# Disable Automatic Checkpoints (doesn't exist in Server 2016)
+$command = Get-Command Set-VM
+if ($command.Parameters.AutomaticCheckpointsEnabled) {
+    $vm | Set-VM -AutomaticCheckpointsEnabled $false
+}
 
 # Wait for VM
+$vm | Start-VM
 Write-Verbose 'Waiting for VM integration services (1)...'
 Wait-VM -Name $VMName -For Heartbeat
 

@@ -61,6 +61,11 @@ if ($EnableDynamicMemory) {
 if ($VMMacAddress) {
     $vm | Set-VMNetworkAdapter -StaticMacAddress ($VMMacAddress -replace ':','')
 }
+# Disable Automatic Checkpoints (doesn't exist in Server 2016)
+$command = Get-Command Set-VM
+if ($command.Parameters.AutomaticCheckpointsEnabled) {
+    $vm | Set-VM -AutomaticCheckpointsEnabled $false
+}
 $vm | Start-VM
 
 # Wait for installation complete
