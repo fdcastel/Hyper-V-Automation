@@ -8,6 +8,34 @@ For Hyper-V Generation 2 VMs only.
 
 
 
+## How to install
+
+To download all scripts into your `$env:temp` folder:
+
+```powershell
+iex (iwr 'bit.ly/h-v-a')
+```
+
+
+
+## Command summary
+  - For Windows VMs
+    - [New-WindowsUnattendFile](#New-WindowsUnattendFile)
+    - [New-VMFromWindowsImage](#New-VMFromWindowsImage_(*)) (*)
+    - [New-VMSession](#New-VMSession)
+    - [Set-NetIPAddressViaSession](#Set-NetIPAddressViaSession)
+    - [Enable-RemoteManagementViaSession](#Enable-RemoteManagementViaSession)
+  - For Ubuntu VMs
+    - [New-NetworkConfig](#New-NetworkConfig)
+    - [Get-UbuntuImage](#Get-UbuntuImage)
+    - [New-VMFromUbuntuImage](#New-VMFromUbuntuImage_(*)) (*)
+  - For any VMs
+    - [Move-VMOffline](#move-vmoffline)
+
+**(*) Requires administrative privileges**.
+
+
+
 ## For Windows VMs
 
 ### New-WindowsUnattendFile
@@ -94,24 +122,22 @@ Remove-PSSession -Session $sess
 
 ## For Ubuntu VMs
 
-### New-NetworkConfig.ps1
+### New-NetworkConfig
 
 ```
-New-NetworkConfig.ps1 -Dhcp [-SecondaryIPAddress <string>] [-SecondaryPrefixLength <string>] [<CommonParameters>]
-New-NetworkConfig.ps1 -IPAddress <string> -PrefixLength <string> -DefaultGateway <string> [-DnsAddresses <string[]>] [-SecondaryIPAddress <string>] [-SecondaryPrefixLength <string>] [<CommonParameters>]
+New-NetworkConfig.ps1 -Dhcp [<CommonParameters>]
+New-NetworkConfig.ps1 -IPAddress <string> -PrefixLength <string> -DefaultGateway <string> [-DnsAddresses <string[]>] [<CommonParameters>]
 ```
 
 Creates a `network-config` file to initialize a Ubuntu VM. Used by `New-VMFromUbuntuImage`.
 
 Primary network adapter (`eth0`) is required and must be configured via `-Dhcp` or `-IPAddress` / `-PrefixLength` / `-DefaultGateway`.
 
-Secondary network adapter (`eth1`) is optional and can be configured via `-SecondaryIPAddress` and `-SecondaryPrefixLength`.
-
 Returns the content of generated file as string.
 
 
 
-### Get-UbuntuImage.ps1
+### Get-UbuntuImage
 
 ```
 Get-UbuntuImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
