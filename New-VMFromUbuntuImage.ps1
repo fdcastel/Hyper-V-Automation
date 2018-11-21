@@ -136,6 +136,9 @@ Write-Verbose 'Creating VHDX from cloud image...'
 $ErrorActionPreference = 'Continue'
 & {
     & qemu-img.exe convert -f qcow2 $SourcePath -O vhdx -o subformat=dynamic $vhdxPath
+    if ($LASTEXITCODE -ne 0) {
+        throw "qemu-img returned $LASTEXITCODE. Aborting."
+    }
 }
 $ErrorActionPreference = 'Stop'
 if ($VHDXSizeBytes) {
