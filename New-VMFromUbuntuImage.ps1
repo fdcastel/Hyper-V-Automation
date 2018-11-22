@@ -46,12 +46,14 @@ instance-id: $instanceId
 local-hostname: $VMName
 "@
 
+    # Last 'update-grub' fix "error: no such device: root." -- https://bit.ly/2TBEdjl
     $sectionRunCmd = @'
 runcmd:
  - 'apt-get update'
  - 'echo "eth0: \134\64{eth0}" >> /etc/issue'
  - 'mv /etc/netplan/50-cloud-init.yaml /etc/netplan/80-static.yaml'
  - 'touch /etc/cloud/cloud-init.disabled'
+ - 'update-grub'
 '@
 
     if ($RootPassword) {
