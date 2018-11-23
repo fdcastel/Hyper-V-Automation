@@ -21,14 +21,13 @@ iex (iwr 'bit.ly/h-v-a')
 ## Command summary
   - For Windows VMs
     - [New-WindowsUnattendFile](#New-WindowsUnattendFile)
-    - [New-VMFromWindowsImage](#New-VMFromWindowsImage_(*)) (*)
+    - [New-VMFromWindowsImage](#New-VMFromWindowsImage-) (*)
     - [New-VMSession](#New-VMSession)
     - [Set-NetIPAddressViaSession](#Set-NetIPAddressViaSession)
     - [Enable-RemoteManagementViaSession](#Enable-RemoteManagementViaSession)
   - For Ubuntu VMs
-    - [New-NetworkConfig](#New-NetworkConfig)
     - [Get-UbuntuImage](#Get-UbuntuImage)
-    - [New-VMFromUbuntuImage](#New-VMFromUbuntuImage_(*)) (*)
+    - [New-VMFromUbuntuImage](#New-VMFromUbuntuImage-) (*)
   - For any VMs
     - [Move-VMOffline](#move-vmoffline)
 
@@ -60,7 +59,7 @@ Creates a Windows VM from .ISO image.
 
 For the `-Edition` parameter use `Get-WindowsImage -ImagePath <path-to-install.wim>` to see all available images. Or just use "1" for the first one.
 
-The `-Version` parameter is needed to set the product key (required for a full unattended install).
+The `-Version` parameter is required to set the product key (required for a full unattended install).
 
 Returns the `VirtualMachine` created.
 
@@ -122,45 +121,35 @@ Remove-PSSession -Session $sess
 
 ## For Ubuntu VMs
 
-### New-NetworkConfig
-
-```
-New-NetworkConfig.ps1 -Dhcp [<CommonParameters>]
-New-NetworkConfig.ps1 -IPAddress <string> -PrefixLength <string> -DefaultGateway <string> [-DnsAddresses <string[]>] [<CommonParameters>]
-```
-
-Creates a `network-config` file to initialize a Ubuntu VM. Used by `New-VMFromUbuntuImage`.
-
-Primary network adapter (`eth0`) is required and must be configured via `-Dhcp` or `-IPAddress` / `-PrefixLength` / `-DefaultGateway`.
-
-Returns the content of generated file as string.
-
-
-
 ### Get-UbuntuImage
 
 ```
 Get-UbuntuImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
 ```
 
-Downloads the latest Ubuntu 18.04 LTS cloud image and verify its integrity.
+Downloads latest Ubuntu 18.04 LTS cloud image and verify its integrity.
 
-Use the `-OutputPath` parameter to set the download location. If not informed, the current folder will be used.
+Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
 
-Returns the path for the downloaded file.
+Returns the path for downloaded file.
 
 
 
 ### New-VMFromUbuntuImage (*)
 
 ```
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-InstallDocker] [<CommonParameters>]
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-VMProcessorCount <long>] [-VMSwitchName <string>] [-VMMacAddress <string>] [-NetworkConfig <string>] [-InstallDocker] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> -EnableRouting -SecondarySwitchName <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> -EnableRouting -SecondarySwitchName <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
 ```
 
 Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 18.04 LTS only.
 
-You will need [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
+You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
 ```
 choco install qemu-img -y
@@ -168,13 +157,15 @@ choco install qemu-img -y
 
 You can download Ubuntu cloud images from [here](https://cloud-images.ubuntu.com/releases/18.04/release/) (get the AMD64 IMG version). Or just use `Get-UbuntuImage.ps1`.
 
-You must use `-RootPassword` to set a password or `-RootPublicKey` to set a public key for the default `ubuntu` user.
+You must use `-RootPassword` to set a password or `-RootPublicKey` to set a public key for default `ubuntu` user.
 
-For the `-NetworkConfig` parameter you may pass a `network-config` content. If not specified the network will be set up via DHCP. 
+You may configure network using `-IPAddress`, `-Gateway` and `-DnsAddresses` options. `-IPAddress` must be in `address/prefix` format. If not specified the network will be configured via DHCP.
 
-You can read the documentation for `network-config` [here](http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v2.html).
+You may rename interfaces with `-InterfaceName` and `-SecondaryInterfaceName`. This will set Hyper-V network adapter name and also set the interface name in Ubuntu.
 
-Alternatively, you may use `New-NetworkConfig.ps1` to create a file with basic network settings.
+You may add a second network using `-SecondarySwitchName`. You may configure it with `-Secondary*` options.
+
+You may configure it as a router using `-EnableRouting` switch. In this case you must inform a second network using `-SecondarySwitchName` (which will be the LAN segment).
 
 You may install Docker using `-InstallDocker` switch.
 
@@ -193,9 +184,7 @@ $vmName = 'test'
 $fqdn = 'test.example.com'
 $rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
-$netConfig = .\New-NetworkConfig.ps1 -IPAddress 10.10.1.195 -PrefixLength 16 -DefaultGateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4'
-
-.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $userPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -VMProcessorCount 2 -NetworkConfig $netConfig
+.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $rootPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -IPAddress 10.10.1.195/16 -Gateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -Verbose
 
 ssh ubuntu@10.10.1.195
 ```
