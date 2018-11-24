@@ -190,6 +190,18 @@ $DisplayInterfaces
 
 if ($IPAddress) {
     # eth0 (Static)
+
+    # Fix for /32 addresses
+    if ($IPAddress.EndsWith('/32')) {
+        $RouteForSlash32 = @"
+
+     [Route]
+     Destination=0.0.0.0/0
+     Gateway=$Gateway
+     GatewayOnlink=true
+"@
+    }
+
     $sectionWriteFiles += @"
  - content: |
      [Match]
@@ -201,6 +213,7 @@ if ($IPAddress) {
      DNS=$($DnsAddresses[0])
      DNS=$($DnsAddresses[1])
      $IpForward
+     $RouteForSlash32
    path: /etc/systemd/network/20-$InterfaceName.network
    owner: root:root
    permissions: '0644'
@@ -345,6 +358,17 @@ power_state:
 # Uses netplan to setup first network interface on first boot (due to cloud-init).
 #   Then erase netplan and uses systemd-network for everything.
 if ($IPAddress) {
+    # Fix for /32 addresses
+    if ($IPAddress.EndsWith('/32')) {
+        $RouteForSlash32 = @"
+
+    routes:
+      - to: 0.0.0.0/0
+        via: $Gateway
+        on-link: true
+"@
+    }
+
     $NetworkConfig = @"
 version: 2
 ethernets:
@@ -353,6 +377,7 @@ ethernets:
     gateway4: $Gateway
     nameservers:
       addresses: [$($DnsAddresses -join ', ')]
+    $RouteForSlash32
 "@
 } else {
     $NetworkConfig = @"
