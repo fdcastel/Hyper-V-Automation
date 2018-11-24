@@ -11,11 +11,9 @@ param(
     [string]$FQDN = $VMName,
 
     [Parameter(Mandatory=$true, ParameterSetName='RootPassword')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting-Password')]
     [string]$RootPassword,
 
     [Parameter(Mandatory=$true, ParameterSetName='RootPublicKey')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting-PublicKey')]
     [string]$RootPublicKey,
 
     [uint64]$VHDXSizeBytes,
@@ -40,14 +38,12 @@ param(
 
     [Parameter(Mandatory=$false, ParameterSetName='RootPassword')]
     [Parameter(Mandatory=$false, ParameterSetName='RootPublicKey')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting-Password')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting-PublicKey')]
+    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting')]
     [switch]$EnableRouting,
 
     [Parameter(Mandatory=$false, ParameterSetName='RootPassword')]
     [Parameter(Mandatory=$false, ParameterSetName='RootPublicKey')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting-Password')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting-PublicKey')]
+    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting')]
     [string]$SecondarySwitchName,
 
     [string]$SecondaryMacAddress,
