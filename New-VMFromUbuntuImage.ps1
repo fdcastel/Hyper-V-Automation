@@ -182,6 +182,15 @@ $DisplayInterfaces
    owner: root:root
    permissions: '0644'
 
+ - content: |
+     # Please see /etc/systemd/network/ for current configuration.
+     # 
+     # systemd.network(5) was used directly to configure this system
+     # due to limitations of netplan(5).
+   path: /etc/netplan/README
+   owner: root:root
+   permissions: '0644'
+
 "@
 
 if ($IPAddress) {
