@@ -70,10 +70,10 @@ Returns the `VirtualMachine` created.
 ### New-VMSession
 
 ```
-New-VMSession.ps1 [-VMName] <string> [-AdministratorPassword] <string> [<CommonParameters>]
+New-VMSession.ps1 [-VMName] <string> [-AdministratorPassword] <string> [[-DomainName] <string>] [<CommonParameters>]
 ```
 
-Creates a new `PSSession` into a VM.
+Creates a new `PSSession` into a VM. In case of error, keeps retrying until connected.
 
 Returns the `PSSession` created.
 
