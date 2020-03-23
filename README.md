@@ -188,6 +188,8 @@ Get-DebianImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
 
 Downloads latest Debian 10 cloud image.
 
+**IMPORTANT:** Unlike `Get-UbuntuImage.ps1`, this script doesn't check the integrity of the downloaded file.
+
 Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
 
 Returns the path for downloaded file.
@@ -203,6 +205,8 @@ New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -EnableRouting -
 ```
 
 Creates a Debian VM from Debian Cloud image. For Debian 10 only.
+
+**IMPORTANT:** Unlike `New-VMFromUbuntuImage.ps1`, this script create VMs with **Secure Boot disabled** (Debian 10 should support it, but I cannot make it work).
 
 You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
