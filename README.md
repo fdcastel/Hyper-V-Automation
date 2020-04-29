@@ -2,7 +2,7 @@
 
 Collection of Powershell scripts to create Windows, Ubuntu and Debian VMs in Hyper-V.
 
-For Windows Server 2016 / Hyper-V Server 2016 / Windows 10 / 8.1 only.
+For Windows Server 2016/2019, Windows 8.1/10 only.
 
 For Hyper-V Generation 2 VMs only.
 
@@ -127,12 +127,14 @@ Remove-PSSession -Session $sess
 ### Get-UbuntuImage
 
 ```
-Get-UbuntuImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
+Get-UbuntuImage.ps1 [[-OutputPath] <string>] [-Previous] [<CommonParameters>]
 ```
 
-Downloads latest Ubuntu 18.04 LTS cloud image and verify its integrity.
+Downloads latest Ubuntu 20.04 LTS cloud image and verify its integrity.
 
 Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
+
+Use `-Previous` parameter to download Ubuntu 18.04 LTS image instead of 20.04 LTS.
 
 Returns the path for downloaded file.
 
