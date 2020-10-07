@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # Note: Github removed TLS 1.0 support. Enables TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol-bor 'Tls12'
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 'Tls12'
 
 if ($Previous) {
     $urlRoot = 'https://cloud-images.ubuntu.com/releases/bionic/release/'

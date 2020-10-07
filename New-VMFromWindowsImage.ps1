@@ -55,9 +55,8 @@ Write-Verbose 'Creating VM...'
 $vm = New-VM -Name $VMName -Generation 2 -MemoryStartupBytes $MemoryStartupBytes -VHDPath $vhdxPath -SwitchName $VMSwitchName
 $vm | Set-VMProcessor -Count $VMProcessorCount
 $vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegrationService -Passthru
-if ($EnableDynamicMemory) {
-    $vm | Set-VMMemory -DynamicMemoryEnabled $true 
-}
+$vm | Set-VMMemory -DynamicMemoryEnabled:$EnableDynamicMemory.IsPresent
+
 if ($VMMacAddress) {
     $vm | Set-VMNetworkAdapter -StaticMacAddress ($VMMacAddress -replace ':','')
 }

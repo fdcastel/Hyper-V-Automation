@@ -92,9 +92,8 @@ Write-Verbose 'Creating VM...'
 $vm = New-VM -Name $VMName -Generation 2 -MemoryStartupBytes $MemoryStartupBytes -VHDPath $vhdxPath -SwitchName $SwitchName
 $vm | Set-VMProcessor -Count $ProcessorCount
 $vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegrationService
-if ($EnableDynamicMemory) {
-    $vm | Set-VMMemory -DynamicMemoryEnabled $true 
-}
+$vm | Set-VMMemory -DynamicMemoryEnabled:$EnableDynamicMemory.IsPresent
+
 # Sets Secure Boot Template. 
 #   Set-VMFirmware -SecureBootTemplate 'MicrosoftUEFICertificateAuthority' doesn't work anymore (!?).
 $vm | Set-VMFirmware -SecureBootTemplateId ([guid]'272e7447-90a4-4563-a4b9-8e4ab00526ce')

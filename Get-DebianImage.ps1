@@ -6,12 +6,13 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # Note: Github removed TLS 1.0 support. Enables TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol-bor 'Tls12'
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 'Tls12'
 
-$urlRoot = 'https://cloud.debian.org/images/cloud/buster/20200210-166'
+$imageVersion = '20200928-407'
+$urlRoot = "https://cloud.debian.org/images/cloud/buster/$imageVersion"
 
 # genericcloud image won't boot in Hyper-V (!?)
-$urlFile = 'debian-10-generic-amd64-20200210-166.qcow2'
+$urlFile = "debian-10-generic-amd64-$imageVersion.qcow2"
 
 $url = "$urlRoot/$urlFile"
         

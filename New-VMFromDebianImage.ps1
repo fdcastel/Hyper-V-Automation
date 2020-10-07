@@ -92,9 +92,8 @@ Write-Verbose 'Creating VM...'
 $vm = New-VM -Name $VMName -Generation 2 -MemoryStartupBytes $MemoryStartupBytes -VHDPath $vhdxPath -SwitchName $SwitchName
 $vm | Set-VMProcessor -Count $ProcessorCount
 $vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegrationService
-if ($EnableDynamicMemory) {
-    $vm | Set-VMMemory -DynamicMemoryEnabled $true 
-}
+$vm | Set-VMMemory -DynamicMemoryEnabled:$EnableDynamicMemory.IsPresent
+
 # Disables Secure Boot (shouldn't Debian 10 support it? -- https://bit.ly/2wkRzd1 ) 
 $vm | Set-VMFirmware -EnableSecureBoot Off
 
@@ -335,7 +334,7 @@ ssh_authorized_keys:
 if ($InstallDocker) {
     $sectionRunCmd += @'
 
- - 'apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common'
+ - 'apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common'
  - 'curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -'
  - 'add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"'
  - 'apt update -y'
