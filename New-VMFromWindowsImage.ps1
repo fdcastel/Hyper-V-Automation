@@ -54,7 +54,8 @@ Convert-WindowsImage -SourcePath $SourcePath -Edition $Edition -VHDPath $vhdxPat
 Write-Verbose 'Creating VM...'
 $vm = New-VM -Name $VMName -Generation 2 -MemoryStartupBytes $MemoryStartupBytes -VHDPath $vhdxPath -SwitchName $VMSwitchName
 $vm | Set-VMProcessor -Count $VMProcessorCount
-$vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegrationService -Passthru
+$gsiName = (Get-VMIntegrationService -VMName $VMName | Where-Object { $_.GetType() -eq [Microsoft.HyperV.PowerShell.GuestServiceInterfaceComponent] }).Name
+$vm | Get-VMIntegrationService -Name "$gsiName" | Enable-VMIntegrationService -Passthru
 $vm | Set-VMMemory -DynamicMemoryEnabled:$EnableDynamicMemory.IsPresent
 
 if ($VMMacAddress) {
