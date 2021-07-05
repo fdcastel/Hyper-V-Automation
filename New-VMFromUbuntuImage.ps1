@@ -36,6 +36,8 @@ param(
 
     [string]$InterfaceName = 'eth0',
 
+    [string]$VlanId,
+
     [Parameter(Mandatory=$false, ParameterSetName='RootPassword')]
     [Parameter(Mandatory=$false, ParameterSetName='RootPublicKey')]
     [Parameter(Mandatory=$true, ParameterSetName='EnableRouting')]
@@ -51,6 +53,8 @@ param(
     [string]$SecondaryIPAddress,
 
     [string]$SecondaryInterfaceName,
+
+    [string]$SecondaryVlanId,
 
     [string]$LoopbackIPAddress,
 
@@ -108,7 +112,9 @@ if ($MacAddress) {
 }
 $eth0 = Get-VMNetworkAdapter -VMName $VMName 
 $eth0 | Rename-VMNetworkAdapter -NewName $InterfaceName
-
+if ($VlanId) {
+    $eth0 | Set-VMNetworkAdapterVlan -Access -VlanId $VlanId
+}    
 if ($SecondarySwitchName) {
     # Add secondary network adapter
     $eth1 = Add-VMNetworkAdapter -VMName $VMName -Name $SecondaryInterfaceName -SwitchName $SecondarySwitchName -PassThru
@@ -116,6 +122,10 @@ if ($SecondarySwitchName) {
     if ($SecondaryMacAddress) {
         $SecondaryMacAddress = Normalize-MacAddress $SecondaryMacAddress
         $eth1 | Set-VMNetworkAdapter -StaticMacAddress $SecondaryMacAddress.Replace(':', '')
+        if ($SecondaryVlanId) {
+            $eth1 | Set-VMNetworkAdapterVlan -Access -VlanId $SecondaryVlanId
+        }    
+
     }
 }
 
