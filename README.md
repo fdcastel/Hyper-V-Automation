@@ -265,8 +265,6 @@ Get-DebianImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
 
 Downloads latest Debian 10 cloud image.
 
-**IMPORTANT:** Unlike `Get-UbuntuImage.ps1`, this script doesn't check the integrity of the downloaded file.
-
 Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
 
 Returns the path for downloaded file.

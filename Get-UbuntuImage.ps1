@@ -6,8 +6,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Note: Github removed TLS 1.0 support. Enables TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 'Tls12'
+# Enables TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 if ($Previous) {
     $urlRoot = 'https://cloud-images.ubuntu.com/releases/bionic/release/'
@@ -34,10 +34,10 @@ if ([System.IO.File]::Exists($imgFile)) {
     $client.DownloadFile($url, $imgFile)
 
     Write-Verbose "Checking file integrity..."
-    $sha1Hash = Get-FileHash $imgFile -Algorithm SHA1
-    $allHashs = $client.DownloadString("$urlRoot/SHA1SUMS")
-    $m = [regex]::Matches($allHashs, "(?<Hash>\w{40})\s\*$urlFile")
-    if (-not $m[0]) { throw "Cannot get SHA1 hash for $urlFile." }
+    $sha1Hash = Get-FileHash $imgFile -Algorithm SHA256
+    $allHashs = $client.DownloadString("$urlRoot/SHA256SUMS")
+    $m = [regex]::Matches($allHashs, "(?<Hash>\w{64})\s\*$urlFile")
+    if (-not $m[0]) { throw "Cannot get hash for $urlFile." }
     $expectedHash = $m[0].Groups['Hash'].Value
     if ($sha1Hash.Hash -ne $expectedHash) { throw "Integrity check for '$imgFile' failed." }
 }

@@ -5,14 +5,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Note: Github removed TLS 1.0 support. Enables TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 'Tls12'
+# Enables TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
-$imageVersion = '20210208-542'
-$urlRoot = "https://cloud.debian.org/images/cloud/buster/$imageVersion"
+$urlRoot = "https://cloud.debian.org/images/cloud/buster/latest"
 
 # genericcloud image won't boot in Hyper-V (!?)
-$urlFile = "debian-10-generic-amd64-$imageVersion.qcow2"
+$urlFile = "debian-10-generic-amd64.qcow2"
 
 $url = "$urlRoot/$urlFile"
         
@@ -30,7 +29,13 @@ if ([System.IO.File]::Exists($imgFile)) {
     $client = New-Object System.Net.WebClient
     $client.DownloadFile($url, $imgFile)
 
-    # Debian image repository doesn't have SHA1SUMS file for integrity checks?
+    Write-Verbose "Checking file integrity..."
+    $sha1Hash = Get-FileHash $imgFile -Algorithm SHA512
+    $allHashs = $client.DownloadString("$urlRoot/SHA512SUMS")
+    $m = [regex]::Matches($allHashs, "(?<Hash>\w{128})\s\s$urlFile")
+    if (-not $m[0]) { throw "Cannot get hash for $urlFile." }
+    $expectedHash = $m[0].Groups['Hash'].Value
+    if ($sha1Hash.Hash -ne $expectedHash) { throw "Integrity check for '$imgFile' failed." }
 }
 
 $imgFile
