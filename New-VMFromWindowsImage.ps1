@@ -42,13 +42,8 @@ $vmms = gwmi -namespace root\virtualization\v2 Msvm_VirtualSystemManagementServi
 $vmmsSettings = gwmi -namespace root\virtualization\v2 Msvm_VirtualSystemManagementServiceSettingData
 $vhdxPath = Join-Path $vmmsSettings.DefaultVirtualHardDiskPath "$VMName.vhdx"
 
-# Create unattend.xml
-$unattendPath = .\New-WindowsUnattendFile.ps1 -AdministratorPassword $AdministratorPassword -Version $Version -ComputerName $VMName -Locale $Locale
-
 # Create VHDX from ISO image
-Write-Verbose 'Creating VHDX from image...'
-. .\tools\Convert-WindowsImage.ps1
-Convert-WindowsImage -SourcePath $SourcePath -Edition $Edition -VHDPath $vhdxPath -SizeBytes $VHDXSizeBytes -VHDFormat VHDX -DiskLayout UEFI -UnattendPath $unattendPath
+.\New-VHDXFromWindowsImage.ps1 -SourcePath $SourcePath -Edition $Edition -ComputerName $VMName -VHDXSizeBytes $VHDXSizeBytes -VHDXPath $vhdxPath -AdministratorPassword $AdministratorPassword -Version $Version -Locale $Locale
 
 # Create VM
 Write-Verbose 'Creating VM...'
