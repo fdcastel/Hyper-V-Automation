@@ -22,16 +22,19 @@ iex (iwr 'bit.ly/h-v-a')
   - For Windows VMs
     - [New-WindowsUnattendFile](#New-WindowsUnattendFile)
     - [New-VMFromWindowsImage](#New-VMFromWindowsImage-) (*)
+    - [New-VHDXFromWindowsImage](#New-VHDXFromWindowsImage-) (*)
     - [New-VMSession](#New-VMSession)
-    - [Set-NetIPAddressViaSession](#Set-NetIPAddressViaSession)
     - [Enable-RemoteManagementViaSession](#Enable-RemoteManagementViaSession)
+    - [Set-NetIPAddressViaSession](#Set-NetIPAddressViaSession)
+    - [Get-VirtioImage](#Get-VirtioImage)
+    - [Add-VirtioDrivers](#Add-VirtioDrivers)
   - For Ubuntu VMs
     - [Get-UbuntuImage](#Get-UbuntuImage)
     - [New-VMFromUbuntuImage](#New-VMFromUbuntuImage-) (*)
   - For Debian VMs
     - [Get-DebianImage](#Get-DebianImage)
     - [New-VMFromDebianImage](#New-VMFromDebianImage-) (*)
-  - For any VMs
+  - Other commands
     - [Move-VMOffline](#move-vmoffline)
 
 **(*) Requires administrative privileges**.
@@ -42,7 +45,7 @@ iex (iwr 'bit.ly/h-v-a')
 
 ### New-WindowsUnattendFile
 
-```
+```powershell
 New-WindowsUnattendFile.ps1 [-AdministratorPassword] <string> [-Version] <string> [[-ComputerName] <string>] [[-FilePath] <string>] [[-Locale] <string>] [<CommonParameters>]
 ```
 
@@ -54,11 +57,11 @@ Returns the full path of created file.
 
 ### New-VMFromWindowsImage (*)
 
-```
+```powershell
 New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-VMMacAddress] <string>] [[-Locale] <string>] [-EnableDynamicMemory] [<CommonParameters>]
 ```
 
-Creates a Windows VM from .ISO image. 
+Creates a Windows VM from an ISO image. 
 
 For the `-Edition` parameter use `Get-WindowsImage -ImagePath <path-to-install.wim>` to see all available images. Or just use "1" for the first one.
 
@@ -70,31 +73,37 @@ Returns the `VirtualMachine` created.
 
 
 
+### New-VHDXFromWindowsImage (*)
+
+```powershell
+New-VHDXFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-ComputerName] <string> [[-VHDXPath] <string>] [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [[-Locale] <string>] [[-AddVirtioDrivers] <string>] [<CommonParameters>]
+```
+
+Creates a Windows VHDX from an ISO image. Similar to `New-VMFromWindowsImage` but without creating a VM.
+
+You can add VirtIO drivers with `-AddVirtioDrivers`. In this case you must inform the path of VirtIO ISO (see [`Get-VirtioImage`](#Get-VirtioImage)). This is useful if you wish to import the created VHDX in a KVM environment.
+
+Returns the path for the VHDX file created.
+
+**(*) Requires administrative privileges**.
+
+
+
 ### New-VMSession
 
-```
+```powershell
 New-VMSession.ps1 [-VMName] <string> [-AdministratorPassword] <string> [[-DomainName] <string>] [<CommonParameters>]
 ```
 
-Creates a new `PSSession` into a VM. In case of error, keeps retrying until connected.
+Creates a new `PSSession` into a VM. In case of error, keeps retrying until connected. Useful for wait until a VM is ready to accept commands.
 
 Returns the `PSSession` created.
 
 
 
-### Set-NetIPAddressViaSession
-
-```
-Set-NetIPAddressViaSession.ps1 [-Session] <PSSession[]> [-IPAddress] <string> [-PrefixLength] <byte> [-DefaultGateway] <string> [[-DnsAddresses] <string[]>] [[-NetworkCategory] <string>] [<CommonParameters>]
-```
-
-Sets TCP/IP configuration for a VM.
-
-
-
 ### Enable-RemoteManagementViaSession
 
-```
+```powershell
 Enable-RemoteManagementViaSession.ps1 [-Session] <PSSession[]> [<CommonParameters>]
 ```
 
@@ -102,20 +111,71 @@ Enables Powershell Remoting, CredSSP server authentication and sets WinRM firewa
 
 
 
+### Set-NetIPAddressViaSession
+
+```powershell
+Set-NetIPAddressViaSession.ps1 [-Session] <PSSession[]> [-IPAddress] <string> [-PrefixLength] <byte> [-DefaultGateway] <string> [[-DnsAddresses] <string[]>] [[-NetworkCategory] <string>] [<CommonParameters>]
+```
+
+Sets TCP/IP configuration for a VM.
+
+
+
+### Get-VirtioImage
+
+```powershell
+Get-VirtioImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
+```
+
+Downloads latest stable ISO image of [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers).
+
+Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
+
+Returns the path for downloaded file.
+
+
+
+### Add-VirtioDrivers
+
+```powershell
+Add-VirtioDrivers.ps1 [-VirtioIsoPath] <string> [-ImagePath] <string> [[-ImageIndex] <int>] [<CommonParameters>]
+```
+
+Adds [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers) into a WIM or VHDX file.
+
+You must inform the path of VirtIO ISO with `-VirtioIsoPath`. You can download the latest image from [here](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers#Using_the_ISO). Or just use [`Get-VirtioImage.ps1`](#Get-VirtioImage).
+
+You must use `-ImagePath` to inform the path of file. For WIM files you must also use `-ImageIndex` to inform the image index inside of WIM. For VHDX files the image index must be always `1` (the default).
+
+
+
 ### Usage sample
 
 ```powershell
-$isoFile = '.\14393.0.160715-1616.RS1_RELEASE_SERVER_EVAL_X64FRE_EN-US.ISO'
-$vmName = 'test'
+$isoFile = '.\en_windows_server_2019_x64_dvd_4cb967d8.iso'
+$vmName = 'TstWindows'
 $pass = 'u531@rg3pa55w0rd$!'
 
-.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'ServerStandardCore' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2016Standard' -MemoryStartupBytes 2GB -VMProcessorCount 2
+.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2019 Standard' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2019Standard' -MemoryStartupBytes 2GB -VMProcessorCount 2
 
 $sess = .\New-VMSession.ps1 -VMName $vmName -AdministratorPassword $pass
 
 .\Set-NetIPAddressViaSession.ps1 -Session $sess -IPAddress 10.10.1.195 -PrefixLength 16 -DefaultGateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -NetworkCategory 'Public'
 
 .\Enable-RemoteManagementViaSession.ps1 -Session $sess
+
+# You can run any commands on VM with Invoke-Command:
+Invoke-Command -Session $sess { 
+    echo "Hello, world! (from $env:COMPUTERNAME)"
+
+    # Install chocolatey
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+    # Install 7-zip
+    choco install 7zip -y
+}
 
 Remove-PSSession -Session $sess
 ```
@@ -126,7 +186,7 @@ Remove-PSSession -Session $sess
 
 ### Get-UbuntuImage
 
-```
+```powershell
 Get-UbuntuImage.ps1 [[-OutputPath] <string>] [-Previous] [<CommonParameters>]
 ```
 
@@ -142,17 +202,15 @@ Returns the path for downloaded file.
 
 ### New-VMFromUbuntuImage (*)
 
-```
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> -EnableRouting -SecondarySwitchName <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-VlanId <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-SecondaryMacAddress <string>] [-SecondaryVlanId <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+```powershell
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-VlanId <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-SecondaryVlanId <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
 
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-VlanId <string>]  [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryVlanId <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-VlanId <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-SecondaryVlanId <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
 
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> -EnableRouting -SecondarySwitchName <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string> [-VlanId <string>]  [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-SecondaryMacAddress <string>] [-SecondaryVlanId <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
-
-New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-VlanId <string>]  [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryVlanId <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -EnableRouting -SecondarySwitchName <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-VlanId <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-SecondaryVlanId <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
 ```
 
-Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 18.04 LTS only.
+Creates a Ubuntu VM from Ubuntu Cloud image. For Ubuntu 18.04 LTS or 20.04 LTS only.
 
 You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
@@ -160,7 +218,7 @@ You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If y
 choco install qemu-img -y
 ```
 
-You can download Ubuntu cloud images from [here](https://cloud-images.ubuntu.com/releases/18.04/release/) (get the AMD64 IMG version). Or just use `Get-UbuntuImage.ps1`.
+You can download Ubuntu cloud images from [here](https://cloud-images.ubuntu.com/releases/focal/release/) (get the `amd64.img` version). Or just use [`Get-UbuntuImage.ps1`](#Get-UbuntuImage).
 
 You must use `-RootPassword` to set a password or `-RootPublicKey` to set a public key for default `ubuntu` user.
 
@@ -180,11 +238,28 @@ Returns the `VirtualMachine` created.
 
 
 
+### Usage sample
+
+```powershell
+# Create a VM with static IP configuration and ssh public key access
+$imgFile = .\Get-UbuntuImage.ps1 -Verbose
+$vmName = 'TstUbuntu'
+$fqdn = 'test.example.com'
+$rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
+
+.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $rootPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -IPAddress 10.10.1.196/16 -Gateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -Verbose
+
+# Your public key is installed. This should not ask you for a password.
+ssh ubuntu@10.10.1.196
+```
+
+
+
 ## For Debian VMs
 
 ### Get-DebianImage
 
-```
+```powershell
 Get-DebianImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
 ```
 
@@ -200,15 +275,17 @@ Returns the path for downloaded file.
 
 ### New-VMFromDebianImage (*)
 
-```
+```powershell
 New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+
 New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-EnableRouting] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
+
 New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -EnableRouting -SecondarySwitchName <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
 ```
 
 Creates a Debian VM from Debian Cloud image. For Debian 10 only.
 
-**IMPORTANT:** Unlike `New-VMFromUbuntuImage.ps1`, this script create VMs with **Secure Boot disabled** (Debian 10 should support it, but I cannot make it work).
+**IMPORTANT:** Unlike `New-VMFromUbuntuImage.ps1`, this script create VMs with **Secure Boot disabled** (Debian 10 [should support it](https://bit.ly/2wkRzd1), but I cannot make it work).
 
 You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
@@ -216,7 +293,7 @@ You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If y
 choco install qemu-img -y
 ```
 
-You can download Debian cloud images from [here](https://cloud.debian.org/images/cloud/buster/) (get the `generic-amd64 version`). Or just use `Get-DebianImage.ps1`.
+You can download Debian cloud images from [here](https://cloud.debian.org/images/cloud/buster/) (get the `generic-amd64 version`). Or just use [`Get-DebianImage.ps1`](#Get-DebianImage).
 
 You must use `-RootPassword` to set a password or `-RootPublicKey` to set a public key for default `debian` user.
 
@@ -236,26 +313,28 @@ Returns the `VirtualMachine` created.
 
 
 
-### Usage samples
+### Usage sample
 
 ```powershell
 # Create a VM with static IP configuration and ssh public key access
-$imgFile = '.\ubuntu-18.04-server-cloudimg-amd64.img'
-$vmName = 'test'
+$imgFile = .\Get-DebianImage.ps1 -Verbose
+$vmName = 'TstDebian'
 $fqdn = 'test.example.com'
 $rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
-.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $rootPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -IPAddress 10.10.1.195/16 -Gateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -Verbose
+.\New-VMFromDebianImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $rootPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -IPAddress 10.10.1.197/16 -Gateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -Verbose
 
-ssh ubuntu@10.10.1.195
+# Your public key is installed. This should not ask you for a password.
+ssh debian@10.10.1.197
 ```
 
 
-## For any VMs
+
+## Other commands
 
 ### Move-VMOffline
 
-```
+```powershell
 Move-VMOffline.ps1 [-VMName] <string> [-DestinationHost] <string> [-CertificateThumbprint] <string> [<CommonParameters>]
 ```
 
