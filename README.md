@@ -263,7 +263,7 @@ ssh ubuntu@10.10.1.196
 Get-DebianImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
 ```
 
-Downloads latest Debian 10 cloud image.
+Downloads latest Debian 11 cloud image.
 
 Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
 
@@ -281,9 +281,7 @@ New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <
 New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -EnableRouting -SecondarySwitchName <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-VlanId <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-SecondaryVlanId <string>] [-LoopbackIPAddress <string>] [-InstallDocker] [<CommonParameters>]
 ```
 
-Creates a Debian VM from Debian Cloud image. For Debian 10 only.
-
-**IMPORTANT:** Unlike `New-VMFromUbuntuImage.ps1`, this script create VMs with **Secure Boot disabled** (Debian 10 [should support it](https://bit.ly/2wkRzd1), but I cannot make it work).
+Creates a Debian VM from Debian Cloud image. For Debian 11 only.
 
 You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
@@ -291,7 +289,7 @@ You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If y
 choco install qemu-img -y
 ```
 
-You can download Debian cloud images from [here](https://cloud.debian.org/images/cloud/buster/) (get the `generic-amd64 version`). Or just use [`Get-DebianImage.ps1`](#Get-DebianImage).
+You can download Debian cloud images from [here](https://cloud.debian.org/images/cloud/bullseye/daily) (get the `genericcloud-amd64 version`). Or just use [`Get-DebianImage.ps1`](#Get-DebianImage).
 
 You must use `-RootPassword` to set a password or `-RootPublicKey` to set a public key for default `debian` user.
 

@@ -98,10 +98,11 @@ $vm | Set-VMProcessor -Count $ProcessorCount
 $vm | Get-VMIntegrationService -Name "Guest Service Interface" | Enable-VMIntegrationService
 $vm | Set-VMMemory -DynamicMemoryEnabled:$EnableDynamicMemory.IsPresent
 
-# Disables Secure Boot (shouldn't Debian 10 support it? -- https://bit.ly/2wkRzd1 ) 
-$vm | Set-VMFirmware -EnableSecureBoot Off
+# Sets Secure Boot Template. 
+#   Set-VMFirmware -SecureBootTemplate 'MicrosoftUEFICertificateAuthority' doesn't work anymore (!?).
+$vm | Set-VMFirmware -SecureBootTemplateId ([guid]'272e7447-90a4-4563-a4b9-8e4ab00526ce')
 
-# Debian startup hangs without a serial port (!?) -- https://bit.ly/2AhsihL
+# Cloud-init startup hangs without a serial port -- https://bit.ly/2AhsihL
 $vm | Set-VMComPort -Number 2 -Path "\\.\pipe\dbg1"
 
 # Setup first network adapter

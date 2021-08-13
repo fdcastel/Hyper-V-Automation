@@ -102,7 +102,7 @@ $vm | Set-VMMemory -DynamicMemoryEnabled:$EnableDynamicMemory.IsPresent
 #   Set-VMFirmware -SecureBootTemplate 'MicrosoftUEFICertificateAuthority' doesn't work anymore (!?).
 $vm | Set-VMFirmware -SecureBootTemplateId ([guid]'272e7447-90a4-4563-a4b9-8e4ab00526ce')
 
-# Ubuntu 16.04/18.04 startup hangs without a serial port (!?) -- https://bit.ly/2AhsihL
+# Cloud-init startup hangs without a serial port -- https://bit.ly/2AhsihL
 $vm | Set-VMComPort -Number 2 -Path "\\.\pipe\dbg1"
 
 # Setup first network adapter

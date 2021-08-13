@@ -8,10 +8,9 @@ $ErrorActionPreference = 'Stop'
 # Enables TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
-$urlRoot = "https://cloud.debian.org/images/cloud/buster/latest"
+$urlRoot = "https://cloud.debian.org/images/cloud/bullseye/daily/latest/"
 
-# genericcloud image won't boot in Hyper-V (!?)
-$urlFile = "debian-10-generic-amd64.qcow2"
+$urlFile = "debian-11-genericcloud-amd64-daily.qcow2"
 
 $url = "$urlRoot/$urlFile"
         
