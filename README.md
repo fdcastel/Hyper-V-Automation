@@ -114,7 +114,7 @@ Enables Powershell Remoting, CredSSP server authentication and sets WinRM firewa
 ### Set-NetIPAddressViaSession
 
 ```powershell
-Set-NetIPAddressViaSession.ps1 [-Session] <PSSession[]> [-IPAddress] <string> [-PrefixLength] <byte> [-DefaultGateway] <string> [[-DnsAddresses] <string[]>] [[-NetworkCategory] <string>] [<CommonParameters>]
+Set-NetIPAddressViaSession.ps1 [-Session] <PSSession[]> [[-AdapterName] <string>] [-IPAddress] <string> [-PrefixLength] <byte> [-DefaultGateway] <string> [[-DnsAddresses] <string[]>] [[-NetworkCategory] <string>] [<CommonParameters>]
 ```
 
 Sets TCP/IP configuration for a VM.
