@@ -10,11 +10,11 @@ $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 if ($Previous) {
-    $urlRoot = 'https://cloud-images.ubuntu.com/releases/bionic/release/'
-    $urlFile = 'ubuntu-18.04-server-cloudimg-amd64.img'
-} else {
     $urlRoot = 'https://cloud-images.ubuntu.com/releases/focal/release/'
     $urlFile = 'ubuntu-20.04-server-cloudimg-amd64.img'
+} else {
+    $urlRoot = 'https://cloud-images.ubuntu.com/releases/jammy/release/'
+    $urlFile = 'ubuntu-22.04-server-cloudimg-amd64.img'
 }
 
 $url = "$urlRoot/$urlFile"
