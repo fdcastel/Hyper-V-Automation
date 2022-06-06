@@ -40,12 +40,6 @@ param(
 
     [Parameter(Mandatory=$false, ParameterSetName='RootPassword')]
     [Parameter(Mandatory=$false, ParameterSetName='RootPublicKey')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting')]
-    [switch]$EnableRouting,
-
-    [Parameter(Mandatory=$false, ParameterSetName='RootPassword')]
-    [Parameter(Mandatory=$false, ParameterSetName='RootPublicKey')]
-    [Parameter(Mandatory=$true, ParameterSetName='EnableRouting')]
     [string]$SecondarySwitchName,
 
     [string]$SecondaryMacAddress,
@@ -55,8 +49,6 @@ param(
     [string]$SecondaryInterfaceName,
 
     [string]$SecondaryVlanId,
-
-    [string]$LoopbackIPAddress,
 
     [switch]$InstallDocker
 )
@@ -161,11 +153,8 @@ instance-id: $instanceId
 local-hostname: $VMName
 "@
 
-$RouterMark = if ($EnableRouting) { '<->' } else { '   ' }
-$IpForward = if ($EnableRouting) { 'IPForward=yes' } else { '' }
-$IpMasquerade = if ($EnableRouting) { 'IPMasquerade=yes' } else { '' }
 if ($SecondarySwitchName) {
-    $DisplayInterfaces = "     $($InterfaceName): \4{$InterfaceName}  $RouterMark  $($SecondaryInterfaceName): \4{$SecondaryInterfaceName}"
+    $DisplayInterfaces = "     $($InterfaceName): \4{$InterfaceName}       $($SecondaryInterfaceName): \4{$SecondaryInterfaceName}"
 } else {
     $DisplayInterfaces = "     $($InterfaceName): \4{$InterfaceName}"
 }
@@ -181,149 +170,12 @@ $DisplayInterfaces
    owner: root:root
    permissions: '0644'
 
- - content: |
-     [Match]
-     MACAddress=$MacAddress
-
-     [Link]
-     Name=$InterfaceName
-   path: /etc/systemd/network/20-$InterfaceName.link
-   owner: root:root
-   permissions: '0644'
-
- - content: |
-     # Please see /etc/systemd/network/ for current configuration.
-     # 
-     # systemd.network(5) was used directly to configure this system
-     # due to limitations of netplan(5).
-   path: /etc/netplan/README
-   owner: root:root
-   permissions: '0644'
-
 "@
 
-if ($IPAddress) {
-    # eth0 (Static)
-
-    # Fix for /32 addresses
-    if ($IPAddress.EndsWith('/32')) {
-        $RouteForSlash32 = @"
-
-     [Route]
-     Destination=0.0.0.0/0
-     Gateway=$Gateway
-     GatewayOnlink=true
-"@
-    }
-
-    $sectionWriteFiles += @"
- - content: |
-     [Match]
-     Name=$InterfaceName
-
-     [Network]
-     Address=$IPAddress
-     Gateway=$Gateway
-     DNS=$($DnsAddresses[0])
-     DNS=$($DnsAddresses[1])
-     $IpForward
-     $RouteForSlash32
-   path: /etc/systemd/network/20-$InterfaceName.network
-   owner: root:root
-   permissions: '0644'
-
-"@
-} else {
-    # eth0 (DHCP)
-    $sectionWriteFiles += @"
- - content: |
-     [Match]
-     Name=$InterfaceName
-
-     [Network]
-     DHCP=true
-     $IpForward
-
-     [DHCP]
-     UseMTU=true
-   path: /etc/systemd/network/20-$InterfaceName.network
-   owner: root:root
-   permissions: '0644'
-
-"@
-}
-
-if ($SecondarySwitchName) {
-    $sectionWriteFiles += @"
- - content: |
-     [Match]
-     MACAddress=$SecondaryMacAddress
-
-     [Link]
-     Name=$SecondaryInterfaceName
-   path: /etc/systemd/network/20-$SecondaryInterfaceName.link
-   owner: root:root
-   permissions: '0644'
-
-"@
-
-    if ($SecondaryIPAddress) {
-        # eth1 (Static)
-        $sectionWriteFiles += @"
- - content: |
-     [Match]
-     Name=$SecondaryInterfaceName
-
-     [Network]
-     Address=$SecondaryIPAddress
-     $IpForward
-     $IpMasquerade
-   path: /etc/systemd/network/20-$SecondaryInterfaceName.network
-   owner: root:root
-   permissions: '0644'
-
-"@
-    } else {
-        # eth1 (DHCP)
-        $sectionWriteFiles += @"
- - content: |
-     [Match]
-     Name=$SecondaryInterfaceName
-
-     [Network]
-     DHCP=true
-     $IpForward
-     $IpMasquerade
-
-     [DHCP]
-     UseMTU=true
-   path: /etc/systemd/network/20-$SecondaryInterfaceName.network
-   owner: root:root
-   permissions: '0644'
-
-"@
-    }
-}
-
-if ($LoopbackIPAddress) {
-    # lo
-    $sectionWriteFiles += @"
- - content: |
-     [Match]
-     Name=lo
-
-     [Network]
-     Address=$LoopbackIPAddress
-   path: /etc/systemd/network/20-lo.network
-   owner: root:root
-   permissions: '0644'
-
-"@
-}
-    
 $sectionRunCmd = @'
 runcmd:
  - 'apt-get update'
+ - 'grep -o "^[^#]*" /etc/netplan/50-cloud-init.yaml > /etc/netplan/80-static.yaml'        # https://unix.stackexchange.com/a/157607
  - 'rm /etc/netplan/50-cloud-init.yaml'
  - 'touch /etc/cloud/cloud-init.disabled'
  - 'update-grub'     # fix "error: no such device: root." -- https://bit.ly/2TBEdjl
@@ -345,9 +197,11 @@ ssh_authorized_keys:
 if ($InstallDocker) {
     $sectionRunCmd += @'
 
- - 'apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common'
- - 'curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -'
- - 'add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"'
+ - 'apt update -y'
+ - 'apt install -y ca-certificates curl gnupg lsb-release'
+ - 'mkdir -p /etc/apt/keyrings'
+ - 'curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg'
+ - 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
  - 'apt update -y'
  - 'apt install -y docker-ce docker-ce-cli containerd.io docker-compose'
 '@
@@ -367,37 +221,57 @@ power_state:
   timeout: 300
 "@
 
-# Uses netplan to setup first network interface on first boot (due to cloud-init).
-#   Then erase netplan and uses systemd-network for everything.
+# Uses netplan to setup network.
 if ($IPAddress) {
-    # Fix for /32 addresses
-    if ($IPAddress.EndsWith('/32')) {
-        $RouteForSlash32 = @"
-
-    routes:
-      - to: 0.0.0.0/0
-        via: $Gateway
-        on-link: true
-"@
-    }
-
     $NetworkConfig = @"
 version: 2
 ethernets:
-  eth0:
+  $($InterfaceName):
+    match:
+      macaddress: $MacAddress
+    set-name: $($InterfaceName)
     addresses: [$IPAddress]
-    gateway4: $Gateway
     nameservers:
       addresses: [$($DnsAddresses -join ', ')]
-    $RouteForSlash32
+    routes:
+      - to: default
+        via: $Gateway
+        on-link: true
+
 "@
 } else {
     $NetworkConfig = @"
 version: 2
 ethernets:
-  eth0:
+  $($InterfaceName):
+    match:
+      macaddress: $MacAddress
+    set-name: $($InterfaceName)
     dhcp4: true
+
 "@
+}
+
+if ($SecondarySwitchName) {
+    if ($SecondaryIPAddress) {
+        $NetworkConfig += @"
+  $($SecondaryInterfaceName):
+    match:
+      macaddress: $SecondaryMacAddress
+    set-name: $($SecondaryInterfaceName)
+    addresses: [$SecondaryIPAddress]
+
+"@
+    } else {
+        $NetworkConfig += @"
+  $($SecondaryInterfaceName):
+    match:
+      macaddress: $SecondaryMacAddress
+    set-name: $($SecondaryInterfaceName)
+    dhcp4: true
+
+"@
+    }
 }
 
 # Save all files in temp folder and create metadata .iso from it
