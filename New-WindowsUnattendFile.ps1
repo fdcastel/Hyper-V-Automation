@@ -4,7 +4,7 @@ param(
     [string]$AdministratorPassword,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Server2019Datacenter','Server2019Standard','Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional','Windows81Professional')]
+    [ValidateSet('Server2022Datacenter','Server2022Standard','Server2019Datacenter','Server2019Standard','Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional','Windows81Professional')]
     [string]$Version,
 
     [ValidateLength(0, 15)]
@@ -86,6 +86,8 @@ if ($Locale) {
 
 # Source: https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
 $key = switch ($Version){ 
+    'Server2022Datacenter'  {'WX4NM-KYWYW-QJJR4-XV3QB-6VM33'}
+    'Server2022Standard'    {'VDYBN-27WPP-V4HQT-9VMD4-VMK7H'}
     'Server2019Datacenter'  {'WMDGN-G9PQG-XVVXX-R3X43-63DFG'}
     'Server2019Standard'    {'N69G4-B89J2-4G8F4-WWYCC-J464C'}
     'Server2016Datacenter'  {'CB7KF-BWN84-R7R2Y-793K2-8XDDG'}
