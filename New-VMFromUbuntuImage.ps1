@@ -26,8 +26,25 @@ param(
 
     [string]$SwitchName = 'SWITCH',
 
+    [ValidateScript({
+        if ($_ -match '^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$') {
+            return $True
+        }
+        throw "-MacAddress must be in format 'xx:xx:xx:xx:xx:xx'."
+    })]
     [string]$MacAddress,
 
+    [ValidateScript({
+        $sIp, $suffix = $_.Split('/')
+        if ($ip = $sIp -as [ipaddress]) {
+            $maxSuffix = if ($ip.AddressFamily -eq 'InterNetworkV6') { 128 } else { 32 }
+            if ($suffix -in 1..$maxSuffix) {
+                return $True
+            }
+            throw "Invalid -IPAddress suffix ($suffix)."
+        }
+        throw "Invalid -IPAddress ($sIp)."
+    })]
     [string]$IPAddress,
 
     [string]$Gateway,
@@ -42,8 +59,25 @@ param(
     [Parameter(Mandatory=$false, ParameterSetName='RootPublicKey')]
     [string]$SecondarySwitchName,
 
+    [ValidateScript({
+        if ($_ -match '^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$') {
+            return $True
+        }
+        throw "-SecondaryMacAddress must be in format 'xx:xx:xx:xx:xx:xx'."
+    })]
     [string]$SecondaryMacAddress,
 
+    [ValidateScript({
+        $sIp, $suffix = $_.Split('/')
+        if ($ip = $sIp -as [ipaddress]) {
+            $maxSuffix = if ($ip.AddressFamily -eq 'InterNetworkV6') { 128 } else { 32 }
+            if ($suffix -in 1..$maxSuffix) {
+                return $True
+            }
+            throw "Invalid -SecondaryIPAddress suffix ($suffix)."
+        }
+        throw "Invalid -SecondaryIPAddress ($sIp)."
+    })]
     [string]$SecondaryIPAddress,
 
     [string]$SecondaryInterfaceName,
