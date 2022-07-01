@@ -4,7 +4,15 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$SourcePath,
-    
+
+    [ValidateScript({
+        $existingVm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+        if (-not $existingVm) {
+            return $True
+        }
+        throw "There is already a VM named '$VMName' in this server."
+        
+    })]
     [Parameter(Mandatory=$true)]
     [string]$VMName,
 
