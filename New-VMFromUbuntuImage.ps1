@@ -276,7 +276,7 @@ ethernets:
     nameservers:
       addresses: [$($DnsAddresses -join ', ')]
     routes:
-      - to: default
+      - to: 0.0.0.0/0
         via: $Gateway
         on-link: true
 
