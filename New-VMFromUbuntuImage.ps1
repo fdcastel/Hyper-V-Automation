@@ -195,19 +195,19 @@ instance-id: $instanceId
 local-hostname: $VMName
 "@
 
+$displayInterface = "     $($InterfaceName): \4{$InterfaceName}    \6{$InterfaceName}"
+$displaySecondaryInterface = ''
 if ($SecondarySwitchName) {
-    $DisplayInterfaces = "     $($InterfaceName): \4{$InterfaceName}       $($SecondaryInterfaceName): \4{$SecondaryInterfaceName}"
-} else {
-    $DisplayInterfaces = "     $($InterfaceName): \4{$InterfaceName}"
+    $displaySecondaryInterface = "     $($SecondaryInterfaceName): \4{$SecondaryInterfaceName}    \6{$SecondaryInterfaceName}`n"
 }
 
 $sectionWriteFiles = @"
 write_files:
  - content: |
-     \S{PRETTY_NAME} \n \l
+     \S{PRETTY_NAME}    \n    \l
 
-$DisplayInterfaces
-     
+$displayInterface
+$displaySecondaryInterface
    path: /etc/issue
    owner: root:root
    permissions: '0644'
