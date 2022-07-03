@@ -290,6 +290,7 @@ ethernets:
       macaddress: $MacAddress
     set-name: $($InterfaceName)
     dhcp4: true
+    dhcp-identifier: mac
 
 "@
 }
@@ -311,6 +312,7 @@ if ($SecondarySwitchName) {
       macaddress: $SecondaryMacAddress
     set-name: $($SecondaryInterfaceName)
     dhcp4: true
+    dhcp-identifier: mac
 
 "@
     }
