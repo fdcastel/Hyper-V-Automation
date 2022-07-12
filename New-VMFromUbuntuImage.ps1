@@ -6,7 +6,7 @@ param(
     [string]$SourcePath,
 
     [ValidateScript({
-        $existingVm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+        $existingVm = Get-VM -Name $_ -ErrorAction SilentlyContinue
         if (-not $existingVm) {
             return $True
         }
