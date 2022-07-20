@@ -4,7 +4,15 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$SourcePath,
-    
+
+    [ValidateScript({
+        $existingVm = Get-VM -Name $_ -ErrorAction SilentlyContinue
+        if (-not $existingVm) {
+            return $True
+        }
+        throw "There is already a VM named '$VMName' in this server."
+        
+    })]
     [Parameter(Mandatory=$true)]
     [string]$VMName,
 
@@ -26,8 +34,25 @@ param(
 
     [string]$SwitchName = 'SWITCH',
 
+    [ValidateScript({
+        if ($_ -match '^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$') {
+            return $True
+        }
+        throw "-MacAddress must be in format 'xx:xx:xx:xx:xx:xx'."
+    })]
     [string]$MacAddress,
 
+    [ValidateScript({
+        $sIp, $suffix = $_.Split('/')
+        if ($ip = $sIp -as [ipaddress]) {
+            $maxSuffix = if ($ip.AddressFamily -eq 'InterNetworkV6') { 128 } else { 32 }
+            if ($suffix -in 1..$maxSuffix) {
+                return $True
+            }
+            throw "Invalid -IPAddress suffix ($suffix)."
+        }
+        throw "Invalid -IPAddress ($sIp)."
+    })]
     [string]$IPAddress,
 
     [string]$Gateway,
@@ -42,8 +67,25 @@ param(
     [Parameter(Mandatory=$false, ParameterSetName='RootPublicKey')]
     [string]$SecondarySwitchName,
 
+    [ValidateScript({
+        if ($_ -match '^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$') {
+            return $True
+        }
+        throw "-SecondaryMacAddress must be in format 'xx:xx:xx:xx:xx:xx'."
+    })]
     [string]$SecondaryMacAddress,
 
+    [ValidateScript({
+        $sIp, $suffix = $_.Split('/')
+        if ($ip = $sIp -as [ipaddress]) {
+            $maxSuffix = if ($ip.AddressFamily -eq 'InterNetworkV6') { 128 } else { 32 }
+            if ($suffix -in 1..$maxSuffix) {
+                return $True
+            }
+            throw "Invalid -SecondaryIPAddress suffix ($suffix)."
+        }
+        throw "Invalid -SecondaryIPAddress ($sIp)."
+    })]
     [string]$SecondaryIPAddress,
 
     [string]$SecondaryInterfaceName,
@@ -153,19 +195,19 @@ instance-id: $instanceId
 local-hostname: $VMName
 "@
 
+$displayInterface = "     $($InterfaceName): \4{$InterfaceName}    \6{$InterfaceName}"
+$displaySecondaryInterface = ''
 if ($SecondarySwitchName) {
-    $DisplayInterfaces = "     $($InterfaceName): \4{$InterfaceName}       $($SecondaryInterfaceName): \4{$SecondaryInterfaceName}"
-} else {
-    $DisplayInterfaces = "     $($InterfaceName): \4{$InterfaceName}"
+    $displaySecondaryInterface = "     $($SecondaryInterfaceName): \4{$SecondaryInterfaceName}    \6{$SecondaryInterfaceName}`n"
 }
 
 $sectionWriteFiles = @"
 write_files:
  - content: |
-     \S{PRETTY_NAME} \n \l
+     \S{PRETTY_NAME}    \n    \l
 
-$DisplayInterfaces
-     
+$displayInterface
+$displaySecondaryInterface
    path: /etc/issue
    owner: root:root
    permissions: '0644'
@@ -234,7 +276,7 @@ ethernets:
     nameservers:
       addresses: [$($DnsAddresses -join ', ')]
     routes:
-      - to: default
+      - to: 0.0.0.0/0
         via: $Gateway
         on-link: true
 
