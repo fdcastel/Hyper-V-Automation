@@ -20,7 +20,17 @@ param(
     [string]$AdministratorPassword,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Server2022Datacenter','Server2022Standard','Server2019Datacenter','Server2019Standard','Server2016Datacenter','Server2016Standard','Windows10Enterprise','Windows10Professional','Windows81Professional')]
+    [ValidateSet('Server2022Datacenter',
+                 'Server2022Standard',
+                 'Server2019Datacenter',
+                 'Server2019Standard',
+                 'Server2016Datacenter',
+                 'Server2016Standard',
+                 'Windows11Enterprise',
+                 'Windows11Professional',
+                 'Windows10Enterprise',
+                 'Windows10Professional',
+                 'Windows81Professional')]
     [string]$Version,
 
     [string]$Locale = 'en-US',
