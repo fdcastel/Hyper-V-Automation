@@ -92,6 +92,8 @@ $key = switch ($Version){
     'Server2019Standard'    {'N69G4-B89J2-4G8F4-WWYCC-J464C'}
     'Server2016Datacenter'  {'CB7KF-BWN84-R7R2Y-793K2-8XDDG'}
     'Server2016Standard'    {'WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY'}
+    'Windows11Enterprise'   {'NPPR9-FWDCX-D2C8J-H872K-2YT43'}
+    'Windows11Professional' {'W269N-WFGWX-YVC9B-4J6C9-T83GX'}
     'Windows10Enterprise'   {'NPPR9-FWDCX-D2C8J-H872K-2YT43'}
     'Windows10Professional' {'W269N-WFGWX-YVC9B-4J6C9-T83GX'}
     'Windows81Professional' {'GCRJD-8NW9H-F2CDX-CCM8D-9D6T9'}
