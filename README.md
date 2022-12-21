@@ -2,11 +2,11 @@
 
 Collection of Powershell scripts to create Windows, Ubuntu and Debian VMs in Hyper-V.
 
-For Windows Server 2016/2019, Windows 8.1/10 only.
+For Windows Server 2016+, Windows 8.1+ only.
 
-For Hyper-V Generation 2 VMs only.
+For Hyper-V Generation 2 (UEFI) VMs only.
 
-To migrate an existing Windows VM from Hyper-V to Proxmox (QEMU) see [Windows: Prepare a VHDX for QEMU migration](#windows-prepare-a-vhdx-for-qemu-migration)
+To migrate an existing Windows VM from Hyper-V to Proxmox (QEMU) see [Windows: Prepare a VHDX for QEMU migration](#windows-prepare-a-vhdx-for-qemu-migration).
 
 
 
