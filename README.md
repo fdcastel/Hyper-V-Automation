@@ -6,6 +6,8 @@ For Windows Server 2016/2019, Windows 8.1/10 only.
 
 For Hyper-V Generation 2 VMs only.
 
+To migrate an existing Windows VM from Hyper-V to Proxmox (QEMU) see [Windows: Prepare a VHDX for QEMU migration](#windows-prepare-a-vhdx-for-qemu-migration)
+
 
 
 ## How to install
@@ -196,6 +198,33 @@ Invoke-Command -Session $sess {
 
 Remove-PSSession -Session $sess
 ```
+
+
+
+## Windows: Prepare a VHDX for QEMU migration
+
+```powershell
+$vmName = 'TstWindows'
+
+# Shutdown VM
+Stop-VM $vmName
+
+# Get VirtIO ISO
+$virtioIso = .\Get-VirtioImage.ps1 -OutputPath $env:TEMP
+
+# Install VirtIO drivers to Windows VM (offline)
+$vhdxFile = "C:\Hyper-V\Virtual Hard Disks\$vmName.vhdx"
+.\Add-VirtioDrivers.ps1 -VirtioIsoPath $virtioIso -ImagePath $vhdxFile
+
+# Convert vhdx to QCOW2 format
+$qcow2File = .\Convert-VhdxToQcow2.ps1 -SourceVhdx $vhdxFile
+
+# Copy QCOW2 file to QEMU host
+scp $qcow2File "root@pve-host:/tmp/"
+```
+
+After copy, you may use [import-vm-windows](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) (on Proxmox) to create the Windows VM. 
+
 
 
 
