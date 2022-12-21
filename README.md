@@ -20,20 +20,21 @@ iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
 
 ## Command summary
   - For Windows VMs
-    - [New-WindowsUnattendFile](#New-WindowsUnattendFile)
-    - [New-VMFromWindowsImage](#New-VMFromWindowsImage-) (*)
-    - [New-VHDXFromWindowsImage](#New-VHDXFromWindowsImage-) (*)
-    - [New-VMSession](#New-VMSession)
-    - [Enable-RemoteManagementViaSession](#Enable-RemoteManagementViaSession)
-    - [Set-NetIPAddressViaSession](#Set-NetIPAddressViaSession)
-    - [Get-VirtioImage](#Get-VirtioImage)
-    - [Add-VirtioDrivers](#Add-VirtioDrivers)
+    - [New-WindowsUnattendFile](#new-windowsunattendfile)
+    - [New-VMFromWindowsImage](#new-vmfromwindowsimage-) (*)
+    - [New-VHDXFromWindowsImage](#new-vhdxfromwindowsimage-) (*)
+    - [New-VMSession](#new-vmsession)
+    - [Enable-RemoteManagementViaSession](#enable-remotemanagementviasession)
+    - [Set-NetIPAddressViaSession](#set-netipaddressviasession)
+    - [Get-VirtioImage](#get-virtioimage)
+    - [Add-VirtioDrivers](#add-virtiodrivers)
+    - [Convert-VhdxToQcow2](#convert-vhdxtoqcow2)
   - For Ubuntu VMs
-    - [Get-UbuntuImage](#Get-UbuntuImage)
-    - [New-VMFromUbuntuImage](#New-VMFromUbuntuImage-) (*)
+    - [Get-UbuntuImage](#get-ubuntuimage)
+    - [New-VMFromUbuntuImage](#new-vmfromubuntuimage-) (*)
   - For Debian VMs
-    - [Get-DebianImage](#Get-DebianImage)
-    - [New-VMFromDebianImage](#New-VMFromDebianImage-) (*)
+    - [Get-DebianImage](#get-debianimage)
+    - [New-VMFromDebianImage](#new-vmfromdebianimage-) (*)
   - Other commands
     - [Move-VMOffline](#move-vmoffline)
 
@@ -146,6 +147,22 @@ Adds [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Driver
 You must inform the path of VirtIO ISO with `-VirtioIsoPath`. You can download the latest image from [here](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers#Using_the_ISO). Or just use [`Get-VirtioImage.ps1`](#Get-VirtioImage).
 
 You must use `-ImagePath` to inform the path of file. For WIM files you must also use `-ImageIndex` to inform the image index inside of WIM. For VHDX files the image index must be always `1` (the default).
+
+
+
+### Convert-VhdxToQcow2
+
+```powershell
+Convert-VhdxToQcow2.ps1 [-SourceVhdx] <string> [[-TargetQcow2] <string>] [<CommonParameters>]
+```
+
+Convert a `vhdx` file to `qcow2` format (used by QEMU).
+
+You must inform the path of source `vhdx` file with `-SourceVhdx`. 
+
+The target file name will be the same as the source with `.qcow2` extension. You may use `-TargetQcow2` to override this.
+
+Returns the path of created file.
 
 
 
