@@ -42,9 +42,9 @@ iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
 
 
 
-## For Windows VMs
+# For Windows VMs
 
-### New-WindowsUnattendFile
+## New-WindowsUnattendFile
 
 ```powershell
 New-WindowsUnattendFile.ps1 [-AdministratorPassword] <string> [-Version] <string> [[-ComputerName] <string>] [[-FilePath] <string>] [[-Locale] <string>] [<CommonParameters>]
@@ -56,7 +56,7 @@ Returns the full path of created file.
 
 
 
-### New-VMFromWindowsImage (*)
+## New-VMFromWindowsImage (*)
 
 ```powershell
 New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-VMMacAddress] <string>] [[-Locale] <string>] [-EnableDynamicMemory] [<CommonParameters>]
@@ -74,7 +74,7 @@ Returns the `VirtualMachine` created.
 
 
 
-### New-VHDXFromWindowsImage (*)
+## New-VHDXFromWindowsImage (*)
 
 ```powershell
 New-VHDXFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-ComputerName] <string> [[-VHDXPath] <string>] [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [[-Locale] <string>] [[-AddVirtioDrivers] <string>] [<CommonParameters>]
@@ -90,7 +90,7 @@ Returns the path for the VHDX file created.
 
 
 
-### New-VMSession
+## New-VMSession
 
 ```powershell
 New-VMSession.ps1 [-VMName] <string> [-AdministratorPassword] <string> [[-DomainName] <string>] [<CommonParameters>]
@@ -102,7 +102,7 @@ Returns the `PSSession` created.
 
 
 
-### Enable-RemoteManagementViaSession
+## Enable-RemoteManagementViaSession
 
 ```powershell
 Enable-RemoteManagementViaSession.ps1 [-Session] <PSSession[]> [<CommonParameters>]
@@ -112,7 +112,7 @@ Enables Powershell Remoting, CredSSP server authentication and sets WinRM firewa
 
 
 
-### Set-NetIPAddressViaSession
+## Set-NetIPAddressViaSession
 
 ```powershell
 Set-NetIPAddressViaSession.ps1 [-Session] <PSSession[]> [[-AdapterName] <string>] [-IPAddress] <string> [-PrefixLength] <byte> [-DefaultGateway] <string> [[-DnsAddresses] <string[]>] [[-NetworkCategory] <string>] [<CommonParameters>]
@@ -122,7 +122,7 @@ Sets TCP/IP configuration for a VM.
 
 
 
-### Get-VirtioImage
+## Get-VirtioImage
 
 ```powershell
 Get-VirtioImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
@@ -136,7 +136,7 @@ Returns the path for downloaded file.
 
 
 
-### Add-VirtioDrivers
+## Add-VirtioDrivers
 
 ```powershell
 Add-VirtioDrivers.ps1 [-VirtioIsoPath] <string> [-ImagePath] <string> [[-ImageIndex] <int>] [<CommonParameters>]
@@ -150,7 +150,7 @@ You must use `-ImagePath` to inform the path of file. For WIM files you must als
 
 
 
-### Convert-VhdxToQcow2
+## Convert-VhdxToQcow2
 
 ```powershell
 Convert-VhdxToQcow2.ps1 [-SourceVhdx] <string> [[-TargetQcow2] <string>] [<CommonParameters>]
@@ -166,7 +166,7 @@ Returns the path of created file.
 
 
 
-### Usage sample
+## Windows: Example
 
 ```powershell
 $isoFile = '.\en_windows_server_2019_x64_dvd_4cb967d8.iso'
@@ -199,9 +199,9 @@ Remove-PSSession -Session $sess
 
 
 
-## For Ubuntu VMs
+# For Ubuntu VMs
 
-### Get-UbuntuImage
+## Get-UbuntuImage
 
 ```powershell
 Get-UbuntuImage.ps1 [[-OutputPath] <string>] [-Previous] [<CommonParameters>]
@@ -217,7 +217,7 @@ Returns the path for downloaded file.
 
 
 
-### New-VMFromUbuntuImage (*)
+## New-VMFromUbuntuImage (*)
 
 ```powershell
 New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-VlanId <string>] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-SecondaryVlanId <string>] [-InstallDocker] [<CommonParameters>]
@@ -251,7 +251,7 @@ Returns the `VirtualMachine` created.
 
 
 
-### Usage sample
+## Ubuntu: Example
 
 ```powershell
 # Create a VM with static IP configuration and ssh public key access
@@ -268,9 +268,9 @@ ssh ubuntu@10.10.1.196
 
 
 
-## For Debian VMs
+# For Debian VMs
 
-### Get-DebianImage
+## Get-DebianImage
 
 ```powershell
 Get-DebianImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
@@ -284,7 +284,7 @@ Returns the path for downloaded file.
 
 
 
-### New-VMFromDebianImage (*)
+## New-VMFromDebianImage (*)
 
 ```powershell
 New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-VlanId <string>] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-SecondaryVlanId <string>] [-InstallDocker] [<CommonParameters>]
@@ -318,7 +318,7 @@ Returns the `VirtualMachine` created.
 
 
 
-### Usage sample
+## Debian: Example
 
 ```powershell
 # Create a VM with static IP configuration and ssh public key access
@@ -335,9 +335,9 @@ ssh debian@10.10.1.197
 
 
 
-## Other commands
+# Other commands
 
-### Move-VMOffline
+## Move-VMOffline
 
 ```powershell
 Move-VMOffline.ps1 [-VMName] <string> [-DestinationHost] <string> [-CertificateThumbprint] <string> [<CommonParameters>]
