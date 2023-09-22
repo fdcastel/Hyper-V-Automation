@@ -38,6 +38,9 @@ iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
   - For Debian VMs
     - [Get-DebianImage](#get-debianimage)
     - [New-VMFromDebianImage](#new-vmfromdebianimage-) (*)
+  - For images with no `cloud-init` support
+    - [Get-OPNsenseImage](#get-opnsenseimage)
+    - [New-VMFromIsoImage](#new-vmfromisoimage-) (*)
   - Other commands
     - [Move-VMOffline](#move-vmoffline)
 
@@ -371,6 +374,80 @@ $rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
 # Your public key is installed. This should not ask you for a password.
 ssh debian@10.10.1.197
+```
+
+
+
+# For images with no `cloud-init` support
+
+## Get-OPNsenseImage
+
+```powershell
+Get-OPNsenseImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
+```
+
+Downloads latest OPNsense ISO image.
+
+Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
+
+Returns the path for downloaded file.
+
+
+
+## New-VMFromIsoImage (*)
+
+```powershell
+New-VMFromIsoImage.ps1 [-IsoPath] <string> [-VMName] <string> [[-VHDXSizeBytes] <uint64>] [[-MemoryStartupBytes] <long>] [[-ProcessorCount] <long>] [[-SwitchName] <string>] [[-MacAddress] <string>] [[-InterfaceName] <string>] [[-VlanId] <string>] [[-SecondarySwitchName] <string>] [[-SecondaryMacAddress] <string>] [[-SecondaryInterfaceName] <string>] [[-SecondaryVlanId] <string>] [-EnableDynamicMemory] [-EnableSecureBoot] [<CommonParameters>]
+```
+
+Creates a VM and boot it from a ISO image.
+
+Returns the `VirtualMachine` created.
+
+After installation, remember to remove the ISO mounted drive with:
+
+```powershell
+Get-VMDvdDrive -VMName 'vm-name' | Remove-VMDvdDrive
+```
+
+**(*) Requires administrative privileges**.
+
+
+
+## OPNsense: Example
+
+The following example will create a OPNsense router and a Windows VM in a private network which will have internet access through OPNsense.
+
+It requires two Hyper-V Virtual Switches:
+
+- `SWITCH` (type: External), connected to a network with internet access and DHCP; and
+- `ISWITCH` (type: Internal), for the private netork.
+
+From OPNsense convention, the first network interface will be assigned as LAN. 
+> **Note**: The default network address will be `192.168.1.1/24` with DHCP enabled.
+
+```powershell
+$isoFile = .\Get-OPNsenseImage.ps1 -Verbose
+$vmName = 'TstOpnRouter'
+
+.\New-VMFromIsoImage.ps1 -IsoPath $isoFile -VMName $vmName -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -SwitchName 'ISWITCH' -InterfaceName 'lan' -SecondarySwitchName 'SWITCH' -SecondaryInterfaceName 'wan' -Verbose
+
+# Windows Server 2022 image
+$isoFile = 'C:\Adm\SW_DVD9_Win_Server_STD_CORE_2022__64Bit_English_DC_STD_MLF_X22-74290.ISO'
+$vmName = 'TstOpnClient'
+$pass = 'u531@rg3pa55w0rd$!'
+
+.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2022 Standard (Desktop Experience)' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2022Standard' -MemoryStartupBytes 4GB -VMProcessorCount 2 -VMSwitchName 'ISWITCH'
+```
+
+The Windows VM should get an internal IP address (from `192.168.1.x/24` range) via DHCP from OPNsense and it should have working internet access.
+
+Remember that OPNsense will be running in _live_ mode from ISO image. To install it logon via console with `installer` user and `opnsense` password.
+
+After the installation, remove the installation media with:
+
+```powershell
+Get-VMDvdDrive -VMName 'TstOpnRouter' | Remove-VMDvdDrive
 ```
 
 
