@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $urlRoot = 'https://mirror.dns-root.de/opnsense/releases/mirror/'
-$urlFile = 'OPNsense-22.1.2-OpenSSL-dvd-amd64.iso.bz2'
+$urlFile = 'OPNsense-23.7-dvd-amd64.iso.bz2'
 
 $url = "$urlRoot/$urlFile"
         
