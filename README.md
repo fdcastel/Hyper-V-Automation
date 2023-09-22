@@ -28,6 +28,7 @@ iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
     - [New-VMSession](#new-vmsession)
     - [Enable-RemoteManagementViaSession](#enable-remotemanagementviasession)
     - [Set-NetIPAddressViaSession](#set-netipaddressviasession)
+    - [Set-NetIPv6AddressViaSession](#set-netipv6addressviasession)
     - [Get-VirtioImage](#get-virtioimage)
     - [Add-VirtioDrivers](#add-virtiodrivers)
     - [Convert-VhdxToQcow2](#convert-vhdxtoqcow2)
@@ -120,7 +121,17 @@ Enables Powershell Remoting, CredSSP server authentication and sets WinRM firewa
 Set-NetIPAddressViaSession.ps1 [-Session] <PSSession[]> [[-AdapterName] <string>] [-IPAddress] <string> [-PrefixLength] <byte> [-DefaultGateway] <string> [[-DnsAddresses] <string[]>] [[-NetworkCategory] <string>] [<CommonParameters>]
 ```
 
-Sets TCP/IP configuration for a VM.
+Sets IPv4 configuration for a Windows VM.
+
+
+
+## Set-NetIPv6AddressViaSession
+
+```powershell
+Set-NetIPv6AddressViaSession.ps1 [-Session] <PSSession[]> [[-AdapterName] <string>] [-IPAddress] <ipaddress> [-PrefixLength] <byte> [[-DnsAddresses] <string[]>] [<CommonParameters>]
+```
+
+Sets IPv6 configuration for a Windows VM.
 
 
 
