@@ -8,9 +8,9 @@ $ErrorActionPreference = 'Stop'
 # Enables TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
-$urlRoot = "https://cloud.debian.org/images/cloud/bullseye/latest/"
+$urlRoot = "https://cloud.debian.org/images/cloud/bookworm/latest/"
 
-$urlFile = "debian-11-genericcloud-amd64.qcow2"
+$urlFile = "debian-12-genericcloud-amd64.qcow2"
 
 $url = "$urlRoot/$urlFile"
         
