@@ -159,7 +159,6 @@ if ($SecondarySwitchName) {
         if ($SecondaryVlanId) {
             $eth1 | Set-VMNetworkAdapterVlan -Access -VlanId $SecondaryVlanId
         }    
-
     }
 }
 
@@ -186,7 +185,7 @@ if ($SecondarySwitchName) {
 
 # Create metadata ISO image
 #   Creates a NoCloud data source for cloud-init.
-#   More info: http://cloudinit.readthedocs.io/en/latest/topics/datasources/nocloud.html
+#   More info: https://cloudinit.readthedocs.io/en/latest/reference/datasources/nocloud.html
 Write-Verbose 'Creating metadata ISO image...'
 $instanceId = [Guid]::NewGuid().ToString()
  
@@ -231,6 +230,7 @@ ssh_pwauth: True
 "@
 } elseif ($RootPublicKey) {
     $sectionPasswd = @"
+disable_root: false
 ssh_authorized_keys:
   - $RootPublicKey
 "@
@@ -329,7 +329,7 @@ try {
     $oscdimgPath = Join-Path $PSScriptRoot '.\tools\oscdimg.exe'
     & {
         $ErrorActionPreference = 'Continue'
-        & $oscdimgPath $tempPath $metadataIso -j2 -lcidata
+        & $oscdimgPath $tempPath $metadataIso -j2 -lCIDATA
         if ($LASTEXITCODE -gt 0) {
             throw "oscdimg.exe returned $LASTEXITCODE."
         }
