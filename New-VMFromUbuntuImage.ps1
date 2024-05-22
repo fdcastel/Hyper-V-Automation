@@ -230,7 +230,6 @@ ssh_pwauth: True
 "@
 } elseif ($RootPublicKey) {
     $sectionPasswd = @"
-disable_root: false
 ssh_authorized_keys:
   - $RootPublicKey
 "@
@@ -254,6 +253,7 @@ $userdata = @"
 hostname: $FQDN
 fqdn: $FQDN
 
+disable_root: false
 $sectionPasswd
 $sectionWriteFiles
 $sectionRunCmd
