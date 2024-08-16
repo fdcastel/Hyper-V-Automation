@@ -180,6 +180,11 @@ The target file name will be the same as the source with `.qcow2` extension. You
 
 Returns the path of created file.
 
+You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
+
+```
+choco install qemu-img -y
+```
 
 
 ## Windows: Example
