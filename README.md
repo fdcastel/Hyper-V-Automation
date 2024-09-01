@@ -255,11 +255,11 @@ After copy, you may use [import-vm-windows](https://github.com/fdcastel/Proxmox-
 Get-UbuntuImage.ps1 [[-OutputPath] <string>] [-Previous] [<CommonParameters>]
 ```
 
-Downloads latest Ubuntu 22.04 LTS cloud image and verify its integrity.
+Downloads latest Ubuntu LTS cloud image and verify its integrity.
 
 Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
 
-Use `-Previous` parameter to download Ubuntu 20.04 LTS image instead of 22.04 LTS.
+Use `-Previous` parameter to download the previous LTS image instead of the current LTS.
 
 Returns the path for downloaded file.
 
@@ -324,7 +324,7 @@ ssh ubuntu@10.10.1.196
 Get-DebianImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
 ```
 
-Downloads latest Debian 11 cloud image.
+Downloads latest Debian cloud image.
 
 Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
 
