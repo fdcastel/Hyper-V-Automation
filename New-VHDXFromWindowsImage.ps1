@@ -1,4 +1,6 @@
 #Requires -RunAsAdministrator
+#Requires -PSEdition Desktop
+
 
 [CmdletBinding()]
 param(
