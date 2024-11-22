@@ -12,7 +12,7 @@ To migrate an existing Windows VM from Hyper-V to Proxmox (QEMU) see [Windows: P
 
 ## How to install
 
-To download all scripts into your `$env:temp` folder:
+To download all scripts into your `$env:TEMP` folder:
 
 ```powershell
 iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
@@ -223,8 +223,9 @@ $vhdxFile = "C:\Hyper-V\Virtual Hard Disks\$vmName.vhdx"
 scp $vhdxFile "root@pve-host:/tmp/"
 ```
 
-Once the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) (on Proxmox) to import the `vhdx` file and create the Windows VM.
+After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) (on Proxmox) to import the `vhdx` file and create the Windows VM.
 
+Once the VM is running, ensure that the [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) is installed within the guest environment.
 
 
 
