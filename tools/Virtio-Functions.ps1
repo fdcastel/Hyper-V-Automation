@@ -2,7 +2,28 @@
 # Functions for working with Virtio drivers in Windows images.
 #
 
-function Get-VirtioDrivers($VirtioDriveLetter)
+function Get-VirtioDriverFolderName([string]$Version)
+{
+    $folder = switch ($Version){
+        'Server2025Datacenter'  {'2k25'}
+        'Server2025Standard'    {'2k25'}
+        'Server2022Datacenter'  {'2k22'}
+        'Server2022Standard'    {'2k22'}
+        'Server2019Datacenter'  {'2k19'}
+        'Server2019Standard'    {'2k19'}
+        'Server2016Datacenter'  {'2k16'}
+        'Server2016Standard'    {'2k16'}
+        'Windows11Enterprise'   {'w11'}
+        'Windows11Professional' {'w11'}
+        'Windows10Enterprise'   {'w10'}
+        'Windows10Professional' {'w10'}
+        'Windows81Professional' {'w8.1'}
+        default {'2k25'}
+    }
+    return $folder
+}
+
+function Get-VirtioDrivers([string]$VirtioDriveLetter, [string]$Version)
 {
     $virtioInstaller = "$($virtioDriveLetter):\virtio-win-gt-x64.msi"
     $exists = Test-Path $virtioInstaller
@@ -11,11 +32,10 @@ function Get-VirtioDrivers($VirtioDriveLetter)
         throw "The specified ISO does not appear to be a valid Virtio installation media."
     }
 
-    return @(
-        "$($VirtioDriveLetter):\vioscsi\w10\amd64",
-        "$($VirtioDriveLetter):\NetKVM\w10\amd64",
-        "$($VirtioDriveLetter):\Balloon\w10\amd64"
-    )
+    $folder = Get-VirtioDriverFolderName $Version
+
+    # All AMD64 drivers for the specified Windows version
+    return (Get-ChildItem "$($VirtioDriveLetter):\*\$folder\amd64\*.inf").Directory.FullName
 }
 
 function With-IsoImage([string]$IsoFileName, [scriptblock]$ScriptBlock)

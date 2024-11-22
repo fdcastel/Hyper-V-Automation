@@ -155,14 +155,18 @@ Returns the path for downloaded file.
 ## Add-VirtioDrivers
 
 ```powershell
-Add-VirtioDrivers.ps1 [-VirtioIsoPath] <string> [-ImagePath] <string> [[-ImageIndex] <int>] [<CommonParameters>]
+Add-VirtioDrivers.ps1 [-VirtioIsoPath] <string> [-ImagePath] <string> [-Version] <string> [[-ImageIndex] <int>] [<CommonParameters>]
 ```
 
 Adds [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers) into a WIM or VHDX file.
 
 You must inform the path of VirtIO ISO with `-VirtioIsoPath`. You can download the latest image from [here](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers#Using_the_ISO). Or just use [`Get-VirtioImage.ps1`](#Get-VirtioImage).
 
-You must use `-ImagePath` to inform the path of file. For WIM files you must also use `-ImageIndex` to inform the image index inside of WIM. For VHDX files the image index must be always `1` (the default).
+You must use `-ImagePath` to inform the path of file. 
+
+You may use `-Version` to specify the Windows version of the image (recommended). This ensures that all appropriate drivers for the system are installed correctly.
+
+For WIM files you must also use `-ImageIndex` to inform the image index inside of WIM. For VHDX files the image index must be always `1` (the default).
 
 
 

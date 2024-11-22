@@ -73,7 +73,7 @@ if ($AddVirtioDrivers) {
         Param($virtioDriveLetter)
 
         # Throws if the ISO does not contain Virtio drivers.
-        $virtioDrivers = Get-VirtioDrivers -VirtioDriveLetter $virtioDriveLetter
+        $virtioDrivers = Get-VirtioDrivers -VirtioDriveLetter $virtioDriveLetter -Version $Version
    
         Convert-WindowsImage @cwiArguments -Driver $virtioDrivers
     }
