@@ -31,7 +31,6 @@ iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
     - [Set-NetIPv6AddressViaSession](#set-netipv6addressviasession)
     - [Get-VirtioImage](#get-virtioimage)
     - [Add-VirtioDrivers](#add-virtiodrivers)
-    - [Convert-VhdxToQcow2](#convert-vhdxtoqcow2)
   - For Ubuntu VMs
     - [Get-UbuntuImage](#get-ubuntuimage)
     - [New-VMFromUbuntuImage](#new-vmfromubuntuimage-) (*)
@@ -170,27 +169,6 @@ For WIM files you must also use `-ImageIndex` to inform the image index inside o
 
 
 
-## Convert-VhdxToQcow2
-
-```powershell
-Convert-VhdxToQcow2.ps1 [-SourceVhdx] <string> [[-TargetQcow2] <string>] [<CommonParameters>]
-```
-
-Convert a `vhdx` file to `qcow2` format (used by QEMU).
-
-You must inform the path of source `vhdx` file with `-SourceVhdx`. 
-
-The target file name will be the same as the source with `.qcow2` extension. You may use `-TargetQcow2` to override this.
-
-Returns the path of created file.
-
-You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
-
-```
-choco install qemu-img -y
-```
-
-
 ## Windows: Example
 
 ```powershell
@@ -239,14 +217,11 @@ $virtioIso = .\Get-VirtioImage.ps1 -OutputPath $env:TEMP
 $vhdxFile = "C:\Hyper-V\Virtual Hard Disks\$vmName.vhdx"
 .\Add-VirtioDrivers.ps1 -VirtioIsoPath $virtioIso -ImagePath $vhdxFile
 
-# Convert vhdx to QCOW2 format
-$qcow2File = .\Convert-VhdxToQcow2.ps1 -SourceVhdx $vhdxFile
-
-# Copy QCOW2 file to QEMU host
-scp $qcow2File "root@pve-host:/tmp/"
+# Copy VHDX file to QEMU host
+scp $vhdxFile "root@pve-host:/tmp/"
 ```
 
-After copy, you may use [import-vm-windows](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) (on Proxmox) to create the Windows VM. 
+Once the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) (on Proxmox) to import the `vhdx` file and create the Windows VM.
 
 
 
