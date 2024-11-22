@@ -2,9 +2,26 @@
 # Functions for working with Virtio drivers in Windows images.
 #
 
+# All drivers installed by virtio-win-gt-x64.msi.
+$InstallerVirtioDrivers = @(
+    'Balloon',
+    'fwcfg',
+    'NetKVM',
+    'pvpanic',
+    'qemupciserial',
+    'viofs',
+    'viogpudo',
+    'vioinput',
+    'viomem',
+    'viorng',
+    'vioscsi',
+    'vioserial',
+    'viostor'
+)
+
 function Get-VirtioDriverFolderName([string]$Version)
 {
-    $folder = switch ($Version){
+    $folder = switch ($Version) {
         'Server2025Datacenter'  {'2k25'}
         'Server2025Standard'    {'2k25'}
         'Server2022Datacenter'  {'2k22'}
@@ -35,7 +52,14 @@ function Get-VirtioDrivers([string]$VirtioDriveLetter, [string]$Version)
     $folder = Get-VirtioDriverFolderName $Version
 
     # All AMD64 drivers for the specified Windows version
-    return (Get-ChildItem "$($VirtioDriveLetter):\*\$folder\amd64\*.inf").Directory.FullName
+    $allDrivers = Get-ChildItem "$($VirtioDriveLetter):\*\$folder\amd64\*.inf" 
+    
+    # Just the drivers installed by virtio-win-gt-x64.msi
+    $filteredDrivers = $allDrivers | Where-Object { 
+        $_.Directory.Parent.Parent.BaseName -in $InstallerVirtioDrivers
+    }
+
+    return $filteredDrivers.Directory.FullName
 }
 
 function With-IsoImage([string]$IsoFileName, [scriptblock]$ScriptBlock)
