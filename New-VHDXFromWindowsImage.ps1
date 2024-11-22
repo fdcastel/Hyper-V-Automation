@@ -1,7 +1,6 @@
 #Requires -RunAsAdministrator
 #Requires -PSEdition Desktop
 
-
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
@@ -56,10 +55,30 @@ $unattendPath = .\New-WindowsUnattendFile.ps1 -AdministratorPassword $Administra
 # Create VHDX from ISO image
 Write-Verbose 'Creating VHDX from image...'
 . .\tools\Convert-WindowsImage.ps1
-Convert-WindowsImage -SourcePath $SourcePath -Edition $Edition -VHDPath $vhdxPath -SizeBytes $VHDXSizeBytes -VHDFormat VHDX -DiskLayout UEFI -UnattendPath $unattendPath
+
+$cwiArguments = @{
+    SourcePath = $SourcePath
+    Edition = $Edition
+    VHDPath = $vhdxPath
+    SizeBytes = $VHDXSizeBytes
+    VHDFormat = 'VHDX'
+    DiskLayout = 'UEFI'
+    UnattendPath = $unattendPath
+}
 
 if ($AddVirtioDrivers) {
-    .\Add-VirtioDrivers.ps1 -VirtioIsoPath $AddVirtioDrivers -ImagePath $VHDXPath
+    . .\tools\Virtio-Functions.ps1
+
+    With-IsoImage -IsoFileName $AddVirtioDrivers {
+        Param($virtioDriveLetter)
+
+        # Throws if the ISO does not contain Virtio drivers.
+        $virtioDrivers = Get-VirtioDrivers -VirtioDriveLetter $virtioDriveLetter
+   
+        Convert-WindowsImage @cwiArguments -Driver $virtioDrivers
+    }
+} else {
+    Convert-WindowsImage @cwiArguments
 }
 
 $VHDXPath
