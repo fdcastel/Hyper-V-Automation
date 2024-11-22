@@ -18,7 +18,9 @@ param(
     [string]$AdministratorPassword,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Server2022Datacenter',
+    [ValidateSet('Server2025Datacenter',
+                 'Server2025Standard',
+                 'Server2022Datacenter',
                  'Server2022Standard',
                  'Server2019Datacenter',
                  'Server2019Standard',
