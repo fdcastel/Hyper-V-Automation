@@ -87,7 +87,7 @@ New-VHDXFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-Comput
 
 Creates a Windows VHDX from an ISO image. Similar to `New-VMFromWindowsImage` but without creating a VM.
 
-You can add VirtIO drivers with `-AddVirtioDrivers`. In this case you must inform the path of VirtIO ISO (see [`Get-VirtioImage`](#Get-VirtioImage)). This is useful if you wish to import the created VHDX in a KVM environment.
+You can add [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers) and the [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) with `-AddVirtioDrivers`. In this case you must provide the path of VirtIO ISO (see [`Get-VirtioImage`](#Get-VirtioImage)) to this parameter. This is useful if you wish to import the created VHDX in a KVM environment.
 
 Returns the path for the VHDX file created.
 
@@ -166,6 +166,8 @@ You must use `-ImagePath` to inform the path of file.
 You may use `-Version` to specify the Windows version of the image (recommended). This ensures that all appropriate drivers for the system are installed correctly.
 
 For WIM files you must also use `-ImageIndex` to inform the image index inside of WIM. For VHDX files the image index must be always `1` (the default).
+
+Please note that -- unlike the `-AddVirtioDrivers` option from `New-VHDXFromWindowsImage` -- this script cannot install the [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) in an existing `vhdx`, as its operations are limited to the offline image (cannot run the installer).
 
 
 

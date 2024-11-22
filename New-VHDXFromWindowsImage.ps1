@@ -56,6 +56,13 @@ $unattendPath = .\New-WindowsUnattendFile.ps1 -AdministratorPassword $Administra
 Write-Verbose 'Creating VHDX from image...'
 . .\tools\Convert-WindowsImage.ps1
 
+# Create temporary folder to store files to be merged into the VHDX.
+$mergeFolder = Join-Path $env:TEMP 'New-VHDXFromWindowsImage-root'
+if (Test-Path $mergeFolder) {
+    Remove-Item -Recurse -Force $mergeFolder
+}
+New-Item -ItemType Directory -Path $mergeFolder -Force > $null
+
 $cwiArguments = @{
     SourcePath = $SourcePath
     Edition = $Edition
@@ -64,7 +71,17 @@ $cwiArguments = @{
     VHDFormat = 'VHDX'
     DiskLayout = 'UEFI'
     UnattendPath = $unattendPath
+    MergeFolder = $mergeFolder
 }
+
+# Removes unattend.xml files after the setup is complete.
+#   https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/add-a-custom-script-to-windows-setup#run-a-script-after-setup-is-complete-setupcompletecmd
+$scriptsFolder = Join-Path $mergeFolder '\Windows\Setup\Scripts'
+New-Item -ItemType Directory -Path $scriptsFolder -Force > $null
+@'
+DEL /Q /F C:\Windows\Panther\unattend.xml
+DEL /Q /F C:\unattend.xml
+'@ | Out-File "$scriptsFolder\SetupComplete.cmd" -Encoding ascii
 
 if ($AddVirtioDrivers) {
     . .\tools\Virtio-Functions.ps1
@@ -74,6 +91,14 @@ if ($AddVirtioDrivers) {
 
         # Throws if the ISO does not contain Virtio drivers.
         $virtioDrivers = Get-VirtioDrivers -VirtioDriveLetter $virtioDriveLetter -Version $Version
+
+        # Adds QEMU Guest Agent installer
+        $driversFolder = Join-Path $mergeFolder '\Windows\drivers'
+        New-Item -ItemType Directory -Path $driversFolder -Force > $null
+        Copy-Item "$($virtioDriveLetter):\guest-agent\qemu-ga-x86_64.msi" -Destination $driversFolder -Force
+
+        # Run the installer when setup is complete.
+        'C:\Windows\drivers\qemu-ga-x86_64.msi /quiet' | Out-File "$scriptsFolder\SetupComplete.cmd" -Append -Encoding ascii
    
         Convert-WindowsImage @cwiArguments -Driver $virtioDrivers
     }
