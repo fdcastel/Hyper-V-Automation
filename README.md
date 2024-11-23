@@ -28,11 +28,25 @@ $isoFile = '.\en_windows_server_2019_x64_dvd_4cb967d8.iso'
 $vmName = 'TstWindows'
 $pass = 'u531@rg3pa55w0rd$!'
 
-.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2019 Standard' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2019Standard' -MemoryStartupBytes 2GB -VMProcessorCount 2
+.\New-VMFromWindowsImage.ps1 `
+    -SourcePath $isoFile `
+    -Edition 'Windows Server 2019 Standard' `
+    -VMName $vmName `
+    -VHDXSizeBytes 60GB `
+    -AdministratorPassword $pass `
+    -Version 'Server2019Standard' `
+    -MemoryStartupBytes 2GB `
+    -VMProcessorCount 2
 
 $sess = .\New-VMSession.ps1 -VMName $vmName -AdministratorPassword $pass
 
-.\Set-NetIPAddressViaSession.ps1 -Session $sess -IPAddress 10.10.1.195 -PrefixLength 16 -DefaultGateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -NetworkCategory 'Public'
+.\Set-NetIPAddressViaSession.ps1 `
+    -Session $sess `
+    -IPAddress 10.10.1.195 `
+    -PrefixLength 16 `
+    -DefaultGateway 10.10.1.250 `
+    -DnsAddresses '8.8.8.8','8.8.4.4' `
+    -NetworkCategory 'Public'
 
 .\Enable-RemoteManagementViaSession.ps1 -Session $sess
 
@@ -73,7 +87,7 @@ $vhdxFile = "C:\Hyper-V\Virtual Hard Disks\$vmName.vhdx"
 scp $vhdxFile "root@pve-host:/tmp/"
 ```
 
-After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
+After the copy is complete, you may use [`new-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#new-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
 
 Once the VM is running, ensure that the [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) is installed within the guest environment.
 
@@ -92,13 +106,20 @@ $virtioIso = .\Get-VirtioImage.ps1 -OutputPath $env:TEMP
 $cloudbaseInitMsi = .\Get-CloudBaseInit.ps1 -OutputPath $env:TEMP
 
 # Create VHDX
-New-VHDXFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2025 Standard' -VHDXPath $targetVhdx -VHDXSizeBytes 60GB -Version 'Server2025Standard' -AddVirtioDrivers $virtioIso -AddCloudBaseInit $cloudbaseInitMsi
+New-VHDXFromWindowsImage.ps1 `
+    -SourcePath $isoFile `
+    -Edition 'Windows Server 2025 Standard' `
+    -VHDXPath $targetVhdx `
+    -VHDXSizeBytes 60GB `
+    -Version 'Server2025Standard' `
+    -AddVirtioDrivers $virtioIso `
+    -AddCloudBaseInit $cloudbaseInitMsi
 
 # Copy VHDX file to QEMU host
 scp $vhdxFile "root@pve-host:/tmp/"
 ```
 
-After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
+After the copy is complete, you may use [`new-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#new-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
 
 The guest VM will come pre-installed with the following software:
 - [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers)
@@ -321,7 +342,18 @@ $vmName = 'TstUbuntu'
 $fqdn = 'test.example.com'
 $rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
-.\New-VMFromUbuntuImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $rootPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -IPAddress 10.10.1.196/16 -Gateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -Verbose
+.\New-VMFromUbuntuImage.ps1 `
+    -SourcePath $imgFile `
+    -VMName $vmName `
+    -FQDN $fqdn `
+    -RootPublicKey $rootPublicKey `
+    -VHDXSizeBytes 60GB `
+    -MemoryStartupBytes 2GB `
+    -ProcessorCount 2 `
+    -IPAddress 10.10.1.196/16 `
+    -Gateway 10.10.1.250 `
+    -DnsAddresses '8.8.8.8','8.8.4.4' `
+    -Verbose
 
 # Your public key is installed. This should not ask you for a password.
 ssh ubuntu@10.10.1.196
@@ -388,7 +420,18 @@ $vmName = 'TstDebian'
 $fqdn = 'test.example.com'
 $rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
-.\New-VMFromDebianImage.ps1 -SourcePath $imgFile -VMName $vmName -FQDN $fqdn -RootPublicKey $rootPublicKey -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -IPAddress 10.10.1.197/16 -Gateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -Verbose
+.\New-VMFromDebianImage.ps1 `
+    -SourcePath $imgFile `
+    -VMName $vmName `
+    -FQDN $fqdn `
+    -RootPublicKey $rootPublicKey `
+    -VHDXSizeBytes 60GB `
+    -MemoryStartupBytes 2GB `
+    -ProcessorCount 2 `
+    -IPAddress 10.10.1.197/16 `
+    -Gateway 10.10.1.250 `
+    -DnsAddresses '8.8.8.8','8.8.4.4' `
+    -Verbose
 
 # Your public key is installed. This should not ask you for a password.
 ssh debian@10.10.1.197
@@ -448,14 +491,33 @@ From OPNsense convention, the first network interface will be assigned as LAN.
 $isoFile = .\Get-OPNsenseImage.ps1 -Verbose
 $vmName = 'TstOpnRouter'
 
-.\New-VMFromIsoImage.ps1 -IsoPath $isoFile -VMName $vmName -VHDXSizeBytes 60GB -MemoryStartupBytes 2GB -ProcessorCount 2 -SwitchName 'ISWITCH' -InterfaceName 'lan' -SecondarySwitchName 'SWITCH' -SecondaryInterfaceName 'wan' -Verbose
+.\New-VMFromIsoImage.ps1 `
+    -IsoPath $isoFile `
+    -VMName $vmName `
+    -VHDXSizeBytes 60GB `
+    -MemoryStartupBytes 2GB `
+    -ProcessorCount 2 `
+    -SwitchName 'ISWITCH' `
+    -InterfaceName 'lan' `
+    -SecondarySwitchName 'SWITCH' `
+    -SecondaryInterfaceName 'wan' `
+    -Verbose
 
 # Windows Server 2022 image
 $isoFile = 'C:\Adm\SW_DVD9_Win_Server_STD_CORE_2022__64Bit_English_DC_STD_MLF_X22-74290.ISO'
 $vmName = 'TstOpnClient'
 $pass = 'u531@rg3pa55w0rd$!'
 
-.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2022 Standard (Desktop Experience)' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2022Standard' -MemoryStartupBytes 4GB -VMProcessorCount 2 -VMSwitchName 'ISWITCH'
+.\New-VMFromWindowsImage.ps1 `
+    -SourcePath $isoFile `
+    -Edition 'Windows Server 2022 Standard (Desktop Experience)' `
+    -VMName $vmName `
+    -VHDXSizeBytes 60GB `
+    -AdministratorPassword $pass `
+    -Version 'Server2022Standard' `
+    -MemoryStartupBytes 4GB `
+    -VMProcessorCount 2 `
+    -VMSwitchName 'ISWITCH'
 ```
 
 The Windows VM should get an internal IP address (from `192.168.1.x/24` range) via DHCP from OPNsense and it should have working internet access.
