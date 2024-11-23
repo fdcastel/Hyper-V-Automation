@@ -24,12 +24,46 @@ param(
 
     [string]$FilePath,
 
-    [string]$Locale
+    [string]$Locale,
+
+    [switch]$AddVirtioDrivers,
+
+    [switch]$AddCloudBaseInit
 )
 
 $ErrorActionPreference = 'Stop'
 
-$template = @'
+$runCommands = @'
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>10</Order>
+                    <Path>net user administrator /active:yes</Path>
+                </RunSynchronousCommand>
+'@
+
+if ($AddVirtioDrivers) {
+    $runCommands += @'
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>20</Order>
+                    <Path>msiexec.exe /i C:\Windows\drivers\qemu-ga-x86_64.msi /qn /l*v C:\Windows\drivers\qemu-ga-x86_64.log /norestart</Path>
+                </RunSynchronousCommand>
+'@
+}
+
+if ($AddCloudBaseInit) {
+    $runCommands += @'
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>31</Order>
+                    <Path>msiexec.exe /i C:\Windows\drivers\CloudbaseInitSetup_Stable_x64.msi /qn /l*v C:\Windows\drivers\CloudbaseInitSetup_Stable_x64.log /norestart</Path>
+                </RunSynchronousCommand>
+
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>32</Order>
+                    <Path>powershell.exe -ExecutionPolicy Bypass -NoProfile -File C:\Windows\drivers\setup-cloudbase-init.ps1"</Path>
+                </RunSynchronousCommand>
+'@
+}
+
+$template = @"
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
     <settings pass="specialize">
@@ -50,10 +84,7 @@ $template = @'
         </component>
         <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <RunSynchronous>
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>1</Order>
-                    <Path>net user administrator /active:yes</Path>
-                </RunSynchronousCommand>
+$runCommands
             </RunSynchronous>
         </component>
     </settings>
@@ -78,7 +109,7 @@ $template = @'
         </component>
     </settings>
 </unattend>
-'@
+"@
 
 $xml = [xml]$template
 
@@ -86,9 +117,7 @@ if (-not $FilePath) {
     $FilePath = Join-Path $env:TEMP 'unattend.xml'
 }
 
-if ($ComputerName) {
-    $xml.unattend.settings[0].component[0].ComputerName = $ComputerName
-}
+$xml.unattend.settings[0].component[0].ComputerName = if ($ComputerName) { $ComputerName } else { '*' }
 
 if ($Locale) {
     $xml.unattend.settings[0].component[1].InputLocale = $Locale

@@ -9,15 +9,12 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$Edition,
 
-    [Parameter(Mandatory=$true)]
     [string]$ComputerName,
 
     [string]$VHDXPath,
 
-    [Parameter(Mandatory=$true)]
     [uint64]$VHDXSizeBytes,
 
-    [Parameter(Mandatory=$true)]
     [string]$AdministratorPassword,
 
     [Parameter(Mandatory=$true)]
@@ -38,19 +35,34 @@ param(
 
     [string]$Locale = 'en-US',
 
-    [string]$AddVirtioDrivers
+    [string]$AddVirtioDrivers,
+
+    [string]$AddCloudBaseInit
 )
 
 $ErrorActionPreference = 'Stop'
 
 if (-not $VHDXPath)
 {
-    # https://stackoverflow.com/a/3040982
+    # Resolve path that might not exist -- https://stackoverflow.com/a/3040982
     $VHDXPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\$($ComputerName).vhdx")
 }
 
+if (-not $VHDXSizeBytes) {
+    $VHDXSizeBytes = 120GB
+}
+
+if (-not $AdministratorPassword) {
+    # Random password
+    $AdministratorPassword = -join (
+        (65..90) + (97..122) + (48..57) |
+            Get-Random -Count 16 |
+                ForEach-Object {[char]$_}
+    )
+}
+
 # Create unattend.xml
-$unattendPath = .\New-WindowsUnattendFile.ps1 -AdministratorPassword $AdministratorPassword -Version $Version -ComputerName $ComputerName -Locale $Locale
+$unattendPath = .\New-WindowsUnattendFile.ps1 -AdministratorPassword $AdministratorPassword -Version $Version -ComputerName $ComputerName -Locale $Locale -AddCloudBaseInit:(!!$AddCloudBaseInit) -AddVirtioDrivers:(!!$AddVirtioDrivers)
 
 # Create VHDX from ISO image
 Write-Verbose 'Creating VHDX from image...'
@@ -83,6 +95,32 @@ DEL /Q /F C:\Windows\Panther\unattend.xml
 DEL /Q /F C:\unattend.xml
 '@ | Out-File "$scriptsFolder\SetupComplete.cmd" -Encoding ascii
 
+$driversFolder = Join-Path $mergeFolder '\Windows\drivers'
+New-Item -ItemType Directory -Path $driversFolder -Force > $null
+
+if ($AddCloudBaseInit) {
+    # Adds Cloudbase-Init installer (will be installed by unattend.xml)
+    $msiFile = Get-Item $AddCloudBaseInit
+    Copy-Item $msiFile -Destination $driversFolder -Force
+
+    # Adds Cloudbase-Init setup script (will be executed by unattend.xml)
+    $setupScriptFile = Join-Path $driversFolder 'setup-cloudbase-init.ps1'
+@'
+    $confFile = 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\cloudbase-init.conf'
+    
+    $content = Get-Content $confFile
+
+    # Do not search for other services (faster run on first boot)
+    $content = $content + 'metadata_services=cloudbaseinit.metadata.services.configdrive.ConfigDriveService'
+
+    # Do not force user to change the password -- https://cloudbase-init.readthedocs.io/en/latest/config.html#DEFAULT.first_logon_behaviour
+    $content = $content + 'first_logon_behaviour=no'
+
+    $content -replace 'username=Admin', 'username=Administrator' |
+        Set-Content -Encoding ascii $confFile
+'@ | Out-File $setupScriptFile -Encoding ascii
+}
+
 if ($AddVirtioDrivers) {
     . .\tools\Virtio-Functions.ps1
 
@@ -92,14 +130,10 @@ if ($AddVirtioDrivers) {
         # Throws if the ISO does not contain Virtio drivers.
         $virtioDrivers = Get-VirtioDrivers -VirtioDriveLetter $virtioDriveLetter -Version $Version
 
-        # Adds QEMU Guest Agent installer
-        $driversFolder = Join-Path $mergeFolder '\Windows\drivers'
-        New-Item -ItemType Directory -Path $driversFolder -Force > $null
-        Copy-Item "$($virtioDriveLetter):\guest-agent\qemu-ga-x86_64.msi" -Destination $driversFolder -Force
+        # Adds QEMU Guest Agent installer (will be installed by unattend.xml)
+        $msiFile = Get-Item "$($virtioDriveLetter):\guest-agent\qemu-ga-x86_64.msi"
+        Copy-Item $msiFile -Destination $driversFolder -Force
 
-        # Run the installer when setup is complete.
-        'C:\Windows\drivers\qemu-ga-x86_64.msi /quiet' | Out-File "$scriptsFolder\SetupComplete.cmd" -Append -Encoding ascii
-   
         Convert-WindowsImage @cwiArguments -Driver $virtioDrivers
     }
 } else {

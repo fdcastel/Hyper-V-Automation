@@ -6,7 +6,7 @@ For Windows Server 2016+, Windows 8.1+ only.
 
 For Hyper-V Generation 2 (UEFI) VMs only.
 
-To migrate an existing Windows VM from Hyper-V to Proxmox (QEMU) see [Windows: Prepare a VHDX for QEMU migration](#windows-prepare-a-vhdx-for-qemu-migration).
+To migrate an existing Windows VM from Hyper-V to Proxmox (QEMU) see [Prepare a VHDX for QEMU migration](#prepare-a-vhdx-for-qemu-migration).
 
 
 
@@ -19,18 +19,105 @@ iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
 ```
 
 
+# Examples
 
-## Command summary
+## Create a new VM for Hyper-V
+
+```powershell
+$isoFile = '.\en_windows_server_2019_x64_dvd_4cb967d8.iso'
+$vmName = 'TstWindows'
+$pass = 'u531@rg3pa55w0rd$!'
+
+.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2019 Standard' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2019Standard' -MemoryStartupBytes 2GB -VMProcessorCount 2
+
+$sess = .\New-VMSession.ps1 -VMName $vmName -AdministratorPassword $pass
+
+.\Set-NetIPAddressViaSession.ps1 -Session $sess -IPAddress 10.10.1.195 -PrefixLength 16 -DefaultGateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -NetworkCategory 'Public'
+
+.\Enable-RemoteManagementViaSession.ps1 -Session $sess
+
+# You can run any commands on VM with Invoke-Command:
+Invoke-Command -Session $sess { 
+    echo "Hello, world! (from $env:COMPUTERNAME)"
+
+    # Install chocolatey
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+    # Install 7-zip
+    choco install 7zip -y
+}
+
+Remove-PSSession -Session $sess
+```
+
+
+
+## Prepare a VHDX for QEMU migration
+
+```powershell
+$vmName = 'TstWindows'
+
+# Shutdown VM
+Stop-VM $vmName
+
+# Get VirtIO ISO
+$virtioIso = .\Get-VirtioImage.ps1 -OutputPath $env:TEMP
+
+# Install VirtIO drivers to Windows VM (offline)
+$vhdxFile = "C:\Hyper-V\Virtual Hard Disks\$vmName.vhdx"
+.\Add-VirtioDrivers.ps1 -VirtioIsoPath $virtioIso -ImagePath $vhdxFile
+
+# Copy VHDX file to QEMU host
+scp $vhdxFile "root@pve-host:/tmp/"
+```
+
+After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
+
+Once the VM is running, ensure that the [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) is installed within the guest environment.
+
+
+
+## Create a Windows `vhdx` template for QEMU
+
+```powershell
+$isoFile = '.\en-us_windows_server_2025_x64_dvd_ccbcec44.iso'
+$targetVhdx = '.\Server2025Standard-template.vhdx'
+
+# Get VirtIO ISO
+$virtioIso = .\Get-VirtioImage.ps1 -OutputPath $env:TEMP
+
+# Get Cloudbase-Init installer
+$cloudbaseInitMsi = .\Get-CloudBaseInit.ps1 -OutputPath $env:TEMP
+
+# Create VHDX
+New-VHDXFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2025 Standard' -VHDXPath $targetVhdx -VHDXSizeBytes 60GB -Version 'Server2025Standard' -AddVirtioDrivers $virtioIso -AddCloudBaseInit $cloudbaseInitMsi
+
+# Copy VHDX file to QEMU host
+scp $vhdxFile "root@pve-host:/tmp/"
+```
+
+After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
+
+The guest VM will come pre-installed with the following software:
+- [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers)
+- [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent)
+- [Cloudbase-Init](https://cloudbase.it/cloudbase-init/)
+
+
+
+# Command summary
   - For Windows VMs
-    - [New-WindowsUnattendFile](#new-windowsunattendfile)
     - [New-VMFromWindowsImage](#new-vmfromwindowsimage-) (*)
     - [New-VHDXFromWindowsImage](#new-vhdxfromwindowsimage-) (*)
     - [New-VMSession](#new-vmsession)
-    - [Enable-RemoteManagementViaSession](#enable-remotemanagementviasession)
     - [Set-NetIPAddressViaSession](#set-netipaddressviasession)
     - [Set-NetIPv6AddressViaSession](#set-netipv6addressviasession)
+    - [Get-CloudBaseInit](#get-cloudbaseinit)
     - [Get-VirtioImage](#get-virtioimage)
     - [Add-VirtioDrivers](#add-virtiodrivers)
+    - [Enable-RemoteManagementViaSession](#enable-remotemanagementviasession)
   - For Ubuntu VMs
     - [Get-UbuntuImage](#get-ubuntuimage)
     - [New-VMFromUbuntuImage](#new-vmfromubuntuimage-) (*)
@@ -48,18 +135,6 @@ iex (iwr 'bit.ly/h-v-a' -UseBasicParsing)
 
 
 # For Windows VMs
-
-## New-WindowsUnattendFile
-
-```powershell
-New-WindowsUnattendFile.ps1 [-AdministratorPassword] <string> [-Version] <string> [[-ComputerName] <string>] [[-FilePath] <string>] [[-Locale] <string>] [<CommonParameters>]
-```
-
-Creates an `unattend.xml` file to initialize a Windows VM. Used by `New-VMFromWindowsImage`.
-
-Returns the full path of created file.
-
-
 
 ## New-VMFromWindowsImage (*)
 
@@ -82,7 +157,7 @@ Returns the `VirtualMachine` created.
 ## New-VHDXFromWindowsImage (*)
 
 ```powershell
-New-VHDXFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-ComputerName] <string> [[-VHDXPath] <string>] [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [[-Locale] <string>] [[-AddVirtioDrivers] <string>] [<CommonParameters>]
+New-VHDXFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [[-ComputerName] <string>] [[-VHDXPath] <string>] [[-VHDXSizeBytes] <uint64>] [[-AdministratorPassword] <string>] [-Version] <string> [[-Locale] <string>] [[-AddVirtioDrivers] <string>] [[-AddCloudBaseInit] <string>] [<CommonParameters>]
 ```
 
 Creates a Windows VHDX from an ISO image. Similar to `New-VMFromWindowsImage` but without creating a VM.
@@ -107,16 +182,6 @@ Returns the `PSSession` created.
 
 
 
-## Enable-RemoteManagementViaSession
-
-```powershell
-Enable-RemoteManagementViaSession.ps1 [-Session] <PSSession[]> [<CommonParameters>]
-```
-
-Enables Powershell Remoting, CredSSP server authentication and sets WinRM firewall rule to `Any` remote address (default: `LocalSubnet`).
-
-
-
 ## Set-NetIPAddressViaSession
 
 ```powershell
@@ -134,6 +199,20 @@ Set-NetIPv6AddressViaSession.ps1 [-Session] <PSSession[]> [[-AdapterName] <strin
 ```
 
 Sets IPv6 configuration for a Windows VM.
+
+
+
+## Get-CloudBaseInit
+
+```powershell
+Get-CloudBaseInit.ps1 [[-OutputPath] <string>] [<CommonParameters>]
+```
+
+Downloads latest stable MSI installer of [Cloudbase-Init](https://cloudbase.it/cloudbase-init/).
+
+Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
+
+Returns the path for downloaded file.
 
 
 
@@ -171,61 +250,13 @@ Please note that -- unlike the `-AddVirtioDrivers` option from `New-VHDXFromWind
 
 
 
-## Windows: Example
+## Enable-RemoteManagementViaSession
 
 ```powershell
-$isoFile = '.\en_windows_server_2019_x64_dvd_4cb967d8.iso'
-$vmName = 'TstWindows'
-$pass = 'u531@rg3pa55w0rd$!'
-
-.\New-VMFromWindowsImage.ps1 -SourcePath $isoFile -Edition 'Windows Server 2019 Standard' -VMName $vmName -VHDXSizeBytes 60GB -AdministratorPassword $pass -Version 'Server2019Standard' -MemoryStartupBytes 2GB -VMProcessorCount 2
-
-$sess = .\New-VMSession.ps1 -VMName $vmName -AdministratorPassword $pass
-
-.\Set-NetIPAddressViaSession.ps1 -Session $sess -IPAddress 10.10.1.195 -PrefixLength 16 -DefaultGateway 10.10.1.250 -DnsAddresses '8.8.8.8','8.8.4.4' -NetworkCategory 'Public'
-
-.\Enable-RemoteManagementViaSession.ps1 -Session $sess
-
-# You can run any commands on VM with Invoke-Command:
-Invoke-Command -Session $sess { 
-    echo "Hello, world! (from $env:COMPUTERNAME)"
-
-    # Install chocolatey
-    Set-ExecutionPolicy Bypass -Scope Process -Force
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
-    # Install 7-zip
-    choco install 7zip -y
-}
-
-Remove-PSSession -Session $sess
+Enable-RemoteManagementViaSession.ps1 [-Session] <PSSession[]> [<CommonParameters>]
 ```
 
-
-
-## Windows: Prepare a VHDX for QEMU migration
-
-```powershell
-$vmName = 'TstWindows'
-
-# Shutdown VM
-Stop-VM $vmName
-
-# Get VirtIO ISO
-$virtioIso = .\Get-VirtioImage.ps1 -OutputPath $env:TEMP
-
-# Install VirtIO drivers to Windows VM (offline)
-$vhdxFile = "C:\Hyper-V\Virtual Hard Disks\$vmName.vhdx"
-.\Add-VirtioDrivers.ps1 -VirtioIsoPath $virtioIso -ImagePath $vhdxFile
-
-# Copy VHDX file to QEMU host
-scp $vhdxFile "root@pve-host:/tmp/"
-```
-
-After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) (on Proxmox) to import the `vhdx` file and create the Windows VM.
-
-Once the VM is running, ensure that the [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) is installed within the guest environment.
+Enables Powershell Remoting, CredSSP server authentication and sets WinRM firewall rule to `Any` remote address (default: `LocalSubnet`).
 
 
 
