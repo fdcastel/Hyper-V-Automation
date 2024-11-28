@@ -109,7 +109,6 @@ function Normalize-MacAddress ([string]$value) {
 $vmms = Get-WmiObject -namespace root\virtualization\v2 Msvm_VirtualSystemManagementService
 $vmmsSettings = Get-WmiObject -namespace root\virtualization\v2 Msvm_VirtualSystemManagementServiceSettingData
 $vhdxPath = Join-Path $vmmsSettings.DefaultVirtualHardDiskPath "$VMName.vhdx"
-$metadataIso = Join-Path $vmmsSettings.DefaultVirtualHardDiskPath "$VMName-metadata.iso"
 
 # Convert cloud image to VHDX
 Write-Verbose 'Creating VHDX from cloud image...'
@@ -186,7 +185,6 @@ if ($SecondarySwitchName) {
 # Create metadata ISO image
 #   Creates a NoCloud data source for cloud-init.
 #   More info: https://cloudinit.readthedocs.io/en/latest/reference/datasources/nocloud.html
-Write-Verbose 'Creating metadata ISO image...'
 $instanceId = [Guid]::NewGuid().ToString()
  
 $metadata = @"
@@ -318,29 +316,9 @@ if ($SecondarySwitchName) {
     }
 }
 
-# Save all files in temp folder and create metadata .iso from it
-$tempPath = Join-Path ([System.IO.Path]::GetTempPath()) $instanceId
-mkdir $tempPath | Out-Null
-try {
-    $metadata | Out-File "$tempPath\meta-data" -Encoding ascii
-    $userdata | Out-File "$tempPath\user-data" -Encoding ascii
-    $NetworkConfig | Out-File "$tempPath\network-config" -Encoding ascii
-
-    $oscdimgPath = Join-Path $PSScriptRoot '.\tools\oscdimg.exe'
-    & {
-        $ErrorActionPreference = 'Continue'
-        & $oscdimgPath $tempPath $metadataIso -j2 -lCIDATA
-        if ($LASTEXITCODE -gt 0) {
-            throw "oscdimg.exe returned $LASTEXITCODE."
-        }
-    }
-}
-finally {
-    rmdir -Path $tempPath -Recurse -Force
-    $ErrorActionPreference = 'Stop'
-}
-
 # Adds DVD with metadata.iso
+. .\tools\Metadata-Functions.ps1
+$metadataIso = New-MetadataIso -VMName $VMName $metadata -UserData $userdata -NetworkConfig $NetworkConfig
 $dvd = $vm | Add-VMDvdDrive -Path $metadataIso -Passthru
 
 # Disable Automatic Checkpoints. Check if command is available since it doesn't exist in Server 2016.
