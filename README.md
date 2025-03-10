@@ -51,7 +51,7 @@ $sess = .\New-VMSession.ps1 -VMName $vmName -AdministratorPassword $pass
 .\Enable-RemoteManagementViaSession.ps1 -Session $sess
 
 # You can run any commands on VM with Invoke-Command:
-Invoke-Command -Session $sess { 
+Invoke-Command -Session $sess {
     echo "Hello, world! (from $env:COMPUTERNAME)"
 
     # Install chocolatey
@@ -149,6 +149,7 @@ The guest VM will come pre-installed with the following software:
     - [Get-OPNsenseImage](#get-opnsenseimage)
     - [New-VMFromIsoImage](#new-vmfromisoimage-) (*)
   - Other commands
+    - [Download-VerifiedFile](#download-verifiedfile)
     - [Move-VMOffline](#move-vmoffline)
 
 **(*) Requires administrative privileges**.
@@ -163,7 +164,7 @@ The guest VM will come pre-installed with the following software:
 New-VMFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [-VMName] <string> [-VHDXSizeBytes] <uint64> [-AdministratorPassword] <string> [-Version] <string> [-MemoryStartupBytes] <long> [[-VMProcessorCount] <long>] [[-VMSwitchName] <string>] [[-VMMacAddress] <string>] [[-Locale] <string>] [-EnableDynamicMemory] [<CommonParameters>]
 ```
 
-Creates a Windows VM from an ISO image. 
+Creates a Windows VM from an ISO image.
 
 For the `-Edition` parameter use `Get-WindowsImage -ImagePath <path-to-install.wim>` to see all available images. Or just use "1" for the first one.
 
@@ -261,7 +262,7 @@ Adds [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Driver
 
 You must inform the path of VirtIO ISO with `-VirtioIsoPath`. You can download the latest image from [here](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers#Using_the_ISO). Or just use [`Get-VirtioImage.ps1`](#Get-VirtioImage).
 
-You must use `-ImagePath` to inform the path of file. 
+You must use `-ImagePath` to inform the path of file.
 
 You may use `-Version` to specify the Windows version of the image (recommended). This ensures that all appropriate drivers for the system are installed correctly.
 
@@ -484,7 +485,7 @@ It requires two Hyper-V Virtual Switches:
 - `SWITCH` (type: External), connected to a network with internet access and DHCP; and
 - `ISWITCH` (type: Internal), for the private netork.
 
-From OPNsense convention, the first network interface will be assigned as LAN. 
+From OPNsense convention, the first network interface will be assigned as LAN.
 > **Note**: The default network address will be `192.168.1.1/24` with DHCP enabled.
 
 ```powershell
@@ -533,6 +534,18 @@ Get-VMDvdDrive -VMName 'TstOpnRouter' | Remove-VMDvdDrive
 
 
 # Other commands
+
+## Download-VerifiedFile
+
+```powershell
+Download-VerifiedFile.ps1 [-Url] <string> [-ExpectedHash] <string> [[-TargetDirectory] <string>] [<CommonParameters>]
+```
+
+Downloads a file and validates its integrity through SHA256 hash verification.
+
+If the file is already present and the hashes match, the download is skipped.
+
+
 
 ## Move-VMOffline
 
