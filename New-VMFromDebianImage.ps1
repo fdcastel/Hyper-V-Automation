@@ -106,20 +106,23 @@ function Normalize-MacAddress ([string]$value) {
 }
 
 # Get default VHD path (requires administrative privileges)
-$vmms = Get-WmiObject -namespace root\virtualization\v2 Msvm_VirtualSystemManagementService
 $vmmsSettings = Get-WmiObject -namespace root\virtualization\v2 Msvm_VirtualSystemManagementServiceSettingData
 $vhdxPath = Join-Path $vmmsSettings.DefaultVirtualHardDiskPath "$VMName.vhdx"
 
 # Convert cloud image to VHDX
 Write-Verbose 'Creating VHDX from cloud image...'
-$ErrorActionPreference = 'Continue'
-& {
-    & qemu-img.exe convert -f qcow2 $SourcePath -O vhdx -o subformat=dynamic $vhdxPath
-    if ($LASTEXITCODE -ne 0) {
-        throw "qemu-img returned $LASTEXITCODE. Aborting."
-    }
+& qemu-img.exe convert -f qcow2 $SourcePath -O vhdx -o subformat=dynamic $vhdxPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw "qemu-img returned $LASTEXITCODE. Aborting."
 }
-$ErrorActionPreference = 'Stop'
+
+# Latest versions of qemu-img create VHDX files with the sparse flag set (even with -S 0).
+#   This causes issues with Hyper-V, so we need to clear it.
+& fsutil.exe sparse setflag $vhdxPath 0 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw "fsutil returned $LASTEXITCODE. Aborting."
+}
+
 if ($VHDXSizeBytes) {
     Resize-VHD -Path $vhdxPath -SizeBytes $VHDXSizeBytes
 }

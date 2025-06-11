@@ -310,7 +310,7 @@ New-VMFromUbuntuImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <
 
 Creates a Ubuntu VM from Ubuntu Cloud image.
 
-You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
+You must have [qemu-img](https://github.com/fdcastel/qemu-img-windows-x64) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
 ```
 choco install qemu-img -y
@@ -388,7 +388,7 @@ New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <
 
 Creates a Debian VM from Debian Cloud image. For Debian 11 only.
 
-You must have [qemu-img](https://cloudbase.it/qemu-img-windows/) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
+You must have [qemu-img](https://github.com/fdcastel/qemu-img-windows-x64) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
 ```
 choco install qemu-img -y
