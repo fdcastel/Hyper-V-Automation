@@ -5,8 +5,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$urlRoot = 'https://mirror.wdc1.us.leaseweb.net/opnsense/releases/25.1/'
-$urlFile = 'OPNsense-25.1-dvd-amd64.iso.bz2'
+$urlRoot = 'https://mirror.wdc1.us.leaseweb.net/opnsense/releases/25.7'
+$urlFile = 'OPNsense-25.7-dvd-amd64.iso.bz2'
 
 $url = "$urlRoot/$urlFile"
         
