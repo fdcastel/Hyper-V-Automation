@@ -5,7 +5,7 @@
 # After downloading, the function must compute the file's SHA-256 hash and compare it to the expected value. If the hashes do not match, an error should be raised. 
 # In cases where the file already exists but fails the hash validation, the function must re-download the file and overwrite the existing version.
 #
-# GitHub Copilot > Claude 3.7 Sonnect (Preview)
+# GitHub Copilot > Claude 3.7 Sonnet (Preview)
 #
 [CmdletBinding()]
 param (
