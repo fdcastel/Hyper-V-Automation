@@ -18,7 +18,9 @@ function New-MetadataIso(
         # Write metadata files.
         $Metadata | Out-File "$metadataContentRoot\meta-data" -Encoding ascii
         $UserData | Out-File "$metadataContentRoot\user-data" -Encoding ascii
-        $NetworkConfig | Out-File "$metadataContentRoot\network-config" -Encoding ascii
+        if ($NetworkConfig) {
+            $NetworkConfig | Out-File "$metadataContentRoot\network-config" -Encoding ascii
+        }
 
         # Use temp folder for metadata ISO -- https://github.com/fdcastel/Hyper-V-Automation/issues/13
         $metadataIso = Join-Path $tempPath "$VMName-metadata.iso"
