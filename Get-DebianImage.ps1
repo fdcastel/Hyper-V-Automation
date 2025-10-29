@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [string]$OutputPath
+    [string]$OutputPath,
+    [switch]$Previous
 )
 
 $ErrorActionPreference = 'Stop'
@@ -8,9 +9,13 @@ $ErrorActionPreference = 'Stop'
 # Enables TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
-$urlRoot = "https://cloud.debian.org/images/cloud/bookworm/latest/"
-
-$urlFile = "debian-12-genericcloud-amd64.qcow2"
+if ($Previous) {
+    $urlRoot = "https://cloud.debian.org/images/cloud/bookworm/latest/"
+    $urlFile = "debian-12-genericcloud-amd64.qcow2"
+} else {
+    $urlRoot = 'https://cloud.debian.org/images/cloud/trixie/latest/'
+    $urlFile = 'debian-13-genericcloud-amd64.qcow2'
+}
 
 $url = "$urlRoot/$urlFile"
         

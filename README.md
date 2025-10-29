@@ -2,7 +2,7 @@
 
 Collection of Powershell scripts to create Windows, Ubuntu and Debian VMs in Hyper-V.
 
-For Windows Server 2016+, Windows 8.1+ only.
+For Windows Server 2016+, Windows 10+ only.
 
 For Hyper-V Generation 2 (UEFI) VMs only.
 
@@ -367,12 +367,14 @@ ssh ubuntu@10.10.1.196
 ## Get-DebianImage
 
 ```powershell
-Get-DebianImage.ps1 [[-OutputPath] <string>] [<CommonParameters>]
+Get-DebianImage.ps1 [[-OutputPath] <string>] [-Previous] [<CommonParameters>]
 ```
 
 Downloads latest Debian cloud image.
 
 Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
+
+Use `-Previous` parameter to download the previous version instead of the current version.
 
 Returns the path for downloaded file.
 
@@ -386,7 +388,7 @@ New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -RootPassword <s
 New-VMFromDebianImage.ps1 -SourcePath <string> -VMName <string> -RootPublicKey <string> [-FQDN <string>] [-VHDXSizeBytes <uint64>] [-MemoryStartupBytes <long>] [-EnableDynamicMemory] [-ProcessorCount <long>] [-SwitchName <string>] [-MacAddress <string>] [-IPAddress <string>] [-Gateway <string>] [-DnsAddresses <string[]>] [-InterfaceName <string>] [-VlanId <string>] [-SecondarySwitchName <string>] [-SecondaryMacAddress <string>] [-SecondaryIPAddress <string>] [-SecondaryInterfaceName <string>] [-SecondaryVlanId <string>] [-InstallDocker] [<CommonParameters>]
 ```
 
-Creates a Debian VM from Debian Cloud image. For Debian 11 only.
+Creates a Debian VM from Debian Cloud image.
 
 You must have [qemu-img](https://github.com/fdcastel/qemu-img-windows-x64) installed. If you have [chocolatey](https://chocolatey.org/) you can install it with:
 
