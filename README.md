@@ -87,7 +87,7 @@ $vhdxFile = "C:\Hyper-V\Virtual Hard Disks\$vmName.vhdx"
 scp $vhdxFile "root@pve-host:/tmp/"
 ```
 
-After the copy is complete, you may use [`new-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#new-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
+After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
 
 Once the VM is running, ensure that the [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) is installed within the guest environment.
 
@@ -119,7 +119,7 @@ New-VHDXFromWindowsImage.ps1 `
 scp $vhdxFile "root@pve-host:/tmp/"
 ```
 
-After the copy is complete, you may use [`new-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#new-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
+After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
 
 The guest VM will come pre-installed with the following software:
 - [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers)
