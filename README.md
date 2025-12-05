@@ -93,8 +93,10 @@ Once the VM is running, ensure that the [QEMU Guest Agent](https://pve.proxmox.c
 
 
 
-## Create a Windows `vhdx` template for QEMU
+## ~~Create a Windows `vhdx` template for QEMU~~ (deprecated)
 
+> **NOTE:** This method is now deprecated. Use [`new-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#new-vm-windows) on Proxmox to create new Windows VMs directly from a Windows ISO image. The following is kept for reference only and will be removed in the future.
+ 
 ```powershell
 $isoFile = '.\en-us_windows_server_2025_x64_dvd_ccbcec44.iso'
 $targetVhdx = '.\Server2025Standard-template.vhdx'
