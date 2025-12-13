@@ -35,9 +35,7 @@ param(
 
     [string]$Locale = 'en-US',
 
-    [string]$AddVirtioDrivers,
-
-    [string]$AddCloudBaseInit
+    [string]$AddVirtioDrivers
 )
 
 $ErrorActionPreference = 'Stop'
@@ -62,7 +60,7 @@ if (-not $AdministratorPassword) {
 }
 
 # Create unattend.xml
-$unattendPath = .\New-WindowsUnattendFile.ps1 -AdministratorPassword $AdministratorPassword -Version $Version -ComputerName $ComputerName -Locale $Locale -AddCloudBaseInit:(!!$AddCloudBaseInit) -AddVirtioDrivers:(!!$AddVirtioDrivers)
+$unattendPath = .\New-WindowsUnattendFile.ps1 -AdministratorPassword $AdministratorPassword -Version $Version -ComputerName $ComputerName -Locale $Locale -AddVirtioDrivers:(!!$AddVirtioDrivers)
 
 # Create VHDX from ISO image
 Write-Verbose 'Creating VHDX from image...'
@@ -97,29 +95,6 @@ DEL /Q /F C:\unattend.xml
 
 $driversFolder = Join-Path $mergeFolder '\Windows\drivers'
 New-Item -ItemType Directory -Path $driversFolder -Force > $null
-
-if ($AddCloudBaseInit) {
-    # Adds Cloudbase-Init installer (will be installed by unattend.xml)
-    $msiFile = Get-Item $AddCloudBaseInit
-    Copy-Item $msiFile -Destination $driversFolder -Force
-
-    # Adds Cloudbase-Init setup script (will be executed by unattend.xml)
-    $setupScriptFile = Join-Path $driversFolder 'setup-cloudbase-init.ps1'
-@'
-    $confFile = 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\cloudbase-init.conf'
-    
-    $content = Get-Content $confFile
-
-    # Do not search for other services (faster run on first boot)
-    $content = $content + 'metadata_services=cloudbaseinit.metadata.services.configdrive.ConfigDriveService'
-
-    # Do not force user to change the password -- https://cloudbase-init.readthedocs.io/en/latest/config.html#DEFAULT.first_logon_behaviour
-    $content = $content + 'first_logon_behaviour=no'
-
-    $content -replace 'username=Admin', 'username=Administrator' |
-        Set-Content -Encoding ascii $confFile
-'@ | Out-File $setupScriptFile -Encoding ascii
-}
 
 if ($AddVirtioDrivers) {
     . .\tools\Virtio-Functions.ps1

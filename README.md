@@ -93,43 +93,6 @@ Once the VM is running, ensure that the [QEMU Guest Agent](https://pve.proxmox.c
 
 
 
-## ~~Create a Windows `vhdx` template for QEMU~~ (deprecated)
-
-> **NOTE:** This method is now deprecated. Use [`new-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#new-vm-windows) on Proxmox to create new Windows VMs directly from a Windows ISO image. The following is kept for reference only and will be removed in the future.
- 
-```powershell
-$isoFile = '.\en-us_windows_server_2025_x64_dvd_ccbcec44.iso'
-$targetVhdx = '.\Server2025Standard-template.vhdx'
-
-# Get VirtIO ISO
-$virtioIso = .\Get-VirtioImage.ps1 -OutputPath $env:TEMP
-
-# Get Cloudbase-Init installer
-$cloudbaseInitMsi = .\Get-CloudBaseInit.ps1 -OutputPath $env:TEMP
-
-# Create VHDX
-New-VHDXFromWindowsImage.ps1 `
-    -SourcePath $isoFile `
-    -Edition 'Windows Server 2025 Standard' `
-    -VHDXPath $targetVhdx `
-    -VHDXSizeBytes 60GB `
-    -Version 'Server2025Standard' `
-    -AddVirtioDrivers $virtioIso `
-    -AddCloudBaseInit $cloudbaseInitMsi
-
-# Copy VHDX file to QEMU host
-scp $vhdxFile "root@pve-host:/tmp/"
-```
-
-After the copy is complete, you may use [`import-vm-windows`](https://github.com/fdcastel/Proxmox-Automation#import-vm-windows) on Proxmox to import the `vhdx` file and create the Windows VM.
-
-The guest VM will come pre-installed with the following software:
-- [Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers)
-- [QEMU Guest Agent](https://pve.proxmox.com/wiki/Qemu-guest-agent)
-- [Cloudbase-Init](https://cloudbase.it/cloudbase-init/)
-
-
-
 # Command summary
   - For Windows VMs
     - [New-VMFromWindowsImage](#new-vmfromwindowsimage-) (*)
@@ -137,7 +100,6 @@ The guest VM will come pre-installed with the following software:
     - [New-VMSession](#new-vmsession)
     - [Set-NetIPAddressViaSession](#set-netipaddressviasession)
     - [Set-NetIPv6AddressViaSession](#set-netipv6addressviasession)
-    - [Get-CloudBaseInit](#get-cloudbaseinit)
     - [Get-VirtioImage](#get-virtioimage)
     - [Add-VirtioDrivers](#add-virtiodrivers)
     - [Enable-RemoteManagementViaSession](#enable-remotemanagementviasession)
@@ -181,7 +143,7 @@ Returns the `VirtualMachine` created.
 ## New-VHDXFromWindowsImage (*)
 
 ```powershell
-New-VHDXFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [[-ComputerName] <string>] [[-VHDXPath] <string>] [[-VHDXSizeBytes] <uint64>] [[-AdministratorPassword] <string>] [-Version] <string> [[-Locale] <string>] [[-AddVirtioDrivers] <string>] [[-AddCloudBaseInit] <string>] [<CommonParameters>]
+New-VHDXFromWindowsImage.ps1 [-SourcePath] <string> [-Edition] <string> [[-ComputerName] <string>] [[-VHDXPath] <string>] [[-VHDXSizeBytes] <uint64>] [[-AdministratorPassword] <string>] [-Version] <string> [[-Locale] <string>] [[-AddVirtioDrivers] <string>] [<CommonParameters>]
 ```
 
 Creates a Windows VHDX from an ISO image. Similar to `New-VMFromWindowsImage` but without creating a VM.
@@ -223,20 +185,6 @@ Set-NetIPv6AddressViaSession.ps1 [-Session] <PSSession[]> [[-AdapterName] <strin
 ```
 
 Sets IPv6 configuration for a Windows VM.
-
-
-
-## Get-CloudBaseInit
-
-```powershell
-Get-CloudBaseInit.ps1 [[-OutputPath] <string>] [<CommonParameters>]
-```
-
-Downloads latest stable MSI installer of [Cloudbase-Init](https://cloudbase.it/cloudbase-init/).
-
-Use `-OutputPath` parameter to set download location. If not informed, the current folder will be used.
-
-Returns the path for downloaded file.
 
 
 

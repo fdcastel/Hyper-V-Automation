@@ -26,9 +26,7 @@ param(
 
     [string]$Locale,
 
-    [switch]$AddVirtioDrivers,
-
-    [switch]$AddCloudBaseInit
+    [switch]$AddVirtioDrivers
 )
 
 $ErrorActionPreference = 'Stop'
@@ -45,20 +43,6 @@ if ($AddVirtioDrivers) {
                 <RunSynchronousCommand wcm:action="add">
                     <Order>20</Order>
                     <Path>msiexec.exe /i C:\Windows\drivers\qemu-ga-x86_64.msi /qn /l*v C:\Windows\drivers\qemu-ga-x86_64.log /norestart</Path>
-                </RunSynchronousCommand>
-'@
-}
-
-if ($AddCloudBaseInit) {
-    $runCommands += @'
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>31</Order>
-                    <Path>msiexec.exe /i C:\Windows\drivers\CloudbaseInitSetup_Stable_x64.msi /qn /l*v C:\Windows\drivers\CloudbaseInitSetup_Stable_x64.log /norestart</Path>
-                </RunSynchronousCommand>
-
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>32</Order>
-                    <Path>powershell.exe -ExecutionPolicy Bypass -NoProfile -File C:\Windows\drivers\setup-cloudbase-init.ps1"</Path>
                 </RunSynchronousCommand>
 '@
 }
